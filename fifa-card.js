@@ -495,7 +495,9 @@
       var grid = el("div", "ssc-fc-stats");
       for (var i = 0; i < stats.length; i++) {
         var cell = el("div", "ssc-fc-stat");
-        cell.appendChild(el("b", null, stats[i][0]));
+        var val = el("b", null, stats[i][0]);
+        if (String(stats[i][0]).length > 8) val.style.fontSize = "6cqw"; // "Periode 2" ran into an ellipsis at full size
+        cell.appendChild(val);
         cell.appendChild(el("span", null, stats[i][1]));
         grid.appendChild(cell);
       }

@@ -58,6 +58,8 @@ Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eila
 - Daarna verschijnt je kaart met een walkout-animatie.
 - Percentages staan naast de cijfers in het rooster.
 
+<p align="center"><img src="assets/screenshots/walkout.webp" alt="Walkout-animatie van je kaart" width="560"></p>
+
 ### 5. Maak met je punten je eigen team
 - Je cijfers worden spelerskaarten. Elk vak is een kaart met een rating.
 - Stel je team op in een formatie en open pakketten.
@@ -139,6 +141,8 @@ One screen with six islands, opened from the "Islands" button in the top bar. Ea
 - Every new grade opens like a pack: first the reveal animation.
 - Then your card appears with a walkout animation.
 - Percentages sit next to the grades in the grid.
+
+<p align="center"><img src="assets/screenshots/walkout.webp" alt="Walkout animation of your card" width="560"></p>
 
 ### 5. Build your own team with your points
 - Your grades become player cards: every subject is a card with a rating.
