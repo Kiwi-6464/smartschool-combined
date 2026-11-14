@@ -5,8 +5,8 @@
 <h1 align="center">Smartschool Combined</h1>
 
 <p align="center">
-  The ultimate Smartschool upgrade: themes, a hub with games, Ultimate Team cards built from your grades, a class league, chess and more.<br>
-  <b>Free for Microsoft Edge.</b>
+  Smartschool, maar dan beter: thema's, een hub met games, Ultimate Team-kaarten van je cijfers, een klascompetitie, schaken en meer.<br>
+  <b>Gratis voor Microsoft Edge.</b> / Smartschool, but better: themes, a hub with games, Ultimate Team cards from your grades, a class league, chess and more.
 </p>
 
 <p align="center">
@@ -18,46 +18,60 @@
 </p>
 
 <p align="center">
-  <img src="assets/screenshots/hub.webp" alt="The Islands hub" width="860">
+  <b>Vind je het handig? Steun de ontwikkeling. / Like it? Support development.</b><br><br>
+  <a href="https://ko-fi.com/smartschoolcombined"><img src="https://img.shields.io/badge/Ko--fi-Trakteer%20op%20een%20koffie-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Doneer via Ko-fi"></a>
+  <a href="https://paypal.me/smartschoolcombined"><img src="https://img.shields.io/badge/PayPal-Doneer-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Doneer via PayPal"></a>
 </p>
 
 <p align="center">
-  <b>Vind je het handig? Steun de ontwikkeling. / Like it? Support development.</b><br>
-  <a href="https://ko-fi.com/smartschoolcombined"><img src="https://img.shields.io/badge/Ko--fi-Trakteer%20op%20een%20koffie-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Doneer via Ko-fi"></a>
-  <a href="https://paypal.me/smartschoolcombined"><img src="https://img.shields.io/badge/PayPal-Doneer-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Doneer via PayPal"></a>
+  <img src="assets/screenshots/hub.webp" alt="The Islands hub" width="860">
 </p>
 
 ---
 
 ## Nederlands
 
-Smartschool Combined is een browserextensie die Smartschool mooier en leuker maakt. Alles draait in je eigen browser, op de Smartschool-pagina zelf. Er is geen apart account nodig.
+**Smartschool, maar dan beter.** Smartschool Combined is een browserextensie die Smartschool mooier maakt en er spelletjes aan toevoegt. Alles draait in je eigen browser, op de Smartschool-pagina zelf. Er is geen apart account nodig.
 
-### Functies
-
-**Uiterlijk**
-- Thema's en live achtergronden (donker, licht, bergen, Japan, auto's, ruimte en meer), of een eigen thema met je eigen afbeelding.
+### 1. Pas het uiterlijk aan
 - Een vernieuwde inlogpagina in glass-stijl, met de knoppen voor Microsoft en de andere aanmeldopties.
-- Een transparante bovenbalk als je dat wilt.
+- Een transparante bovenbalk, als je dat wilt.
 - Widgets en notities op de startpagina.
 
-**Islands, de hub**
-Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan:
-- **Arcade**: Snake, 2048, Mines, Plinko, Roulette en Blackjack, met munten en records.
-- **School**: snel naar je punten en evaluaties.
+### 2. Kies je eigen stijl
+- Thema's en live achtergronden: donker, licht, bergen, Japan, auto's, ruimte en meer.
+- Of maak een eigen thema met je eigen afbeelding.
+
+### 3. Alles op één plek: de Islands-hub
+Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eiland wordt hieronder verder uitgelegd.
+- **Arcade**: speelhal met games en munten.
 - **Stadion**: je Ultimate Team en de klascompetitie.
-- **Boerderij**: zaaien, oogsten, bakken en bestellingen leveren.
+- **Boerderij**: bouw je eigen boerderij.
+- **School**: snel naar je punten en evaluaties.
 - **Schaken**: tegen zes bots met klok en analyse na de partij, of samen op één scherm.
 - **Rekentoestel**: programma's naar je TI-84 sturen via USB (nu alleen voor de ingestelde klas).
 
-**Cijfers**
-- Cijfers onthullen met animaties, zoals een pakje openen.
-- Percentages bij de cijfers in het rooster.
+### 4. Unbox je punten
+- Elk nieuw cijfer opent als een pakje: eerst de onthulling met animatie.
+- Daarna verschijnt je kaart met een walkout-animatie.
+- Percentages staan naast de cijfers in het rooster.
 
-**Ultimate Team en competitie**
+### 5. Maak met je punten je eigen team
 - Je cijfers worden spelerskaarten. Elk vak is een kaart met een rating.
-- Stel je team op in een formatie, open pakketten en bekijk walkout-animaties.
+- Stel je team op in een formatie en open pakketten.
+
+### 6. Speel tegen je klas
 - Speel elk weekend in de klascompetitie tegen je klasgenoten.
+
+### 7. Speel games voor munten
+- In de arcade: Snake, 2048, Mines, Plinko, Roulette en Blackjack, met munten en records.
+
+### 8. Bouw met je munten je eigen boerderij
+- Zaaien, oogsten, bakken en bestellingen leveren.
+
+### 9. Extra munten: los puzzels op
+- Draai de buizen tot er een weg loopt van pijl naar pijl. Dat levert 100 munten op.
+- Soms komt er ook een logicapuzzel voorbij.
 
 <table align="center">
   <tr>
@@ -98,33 +112,62 @@ Let op: deze broncode bevat geen achtergrondafbeeldingen, geluiden en Firebase-s
 
 ## English
 
-Smartschool Combined is a browser extension that makes Smartschool look better and adds fun on top. Everything runs in your own browser, on the Smartschool page itself. No extra account is needed.
+**Smartschool, but better.** Smartschool Combined is a browser extension that makes Smartschool look better and adds games on top. Everything runs in your own browser, on the Smartschool page itself. No extra account is needed.
 
-### Features
-
-**Look and feel**
-- Themes and live wallpapers (dark, light, mountains, Japan, cars, space and more), or a custom theme with your own image.
+### 1. Customise the look
 - A redesigned glass-style login page, keeping the Microsoft button and the other sign-in options.
 - An optional transparent top bar.
 - Widgets and notes on the start page.
 
-**Islands, the hub**
-One screen with six islands, opened from the "Islands" button in the top bar:
-- **Arcade**: Snake, 2048, Mines, Plinko, Roulette and Blackjack, with coins and high scores.
-- **School**: a shortcut to your grades and evaluations.
+### 2. Pick your own style
+- Themes and live wallpapers: dark, light, mountains, Japan, cars, space and more.
+- Or make a custom theme with your own image.
+
+### 3. Everything in one place: the Islands hub
+One screen with six islands, opened from the "Islands" button in the top bar. Each island is explained further below.
+- **Arcade**: a game hall with coins.
 - **Stadium**: your Ultimate Team and the class league.
-- **Farm**: plant, harvest, bake and deliver orders.
+- **Farm**: build your own farm.
+- **School**: a shortcut to your grades and evaluations.
 - **Chess**: play six bots with a clock and post-game analysis, or two players on one screen.
 - **Calculator**: send programs to your TI-84 over USB (currently limited to one configured class).
 
-**Grades**
-- Reveal new grades with animations, like opening a pack.
-- Percentages next to grades in the grid.
+### 4. Unbox your points
+- Every new grade opens like a pack: first the reveal animation.
+- Then your card appears with a walkout animation.
+- Percentages sit next to the grades in the grid.
 
-**Ultimate Team and league**
+### 5. Build your own team with your points
 - Your grades become player cards: every subject is a card with a rating.
-- Pick a formation, open packs and watch walkout animations.
+- Pick a formation and open packs.
+
+### 6. Play against your class
 - Play your classmates every weekend in the class league.
+
+### 7. Play games for coins
+- In the arcade: Snake, 2048, Mines, Plinko, Roulette and Blackjack, with coins and high scores.
+
+### 8. Build your own farm with your coins
+- Plant, harvest, bake and deliver orders.
+
+### 9. Extra coins: solve puzzles
+- Turn the pipes until one track runs from arrow to arrow. That gives 100 coins.
+- Now and then a logic puzzle shows up too.
+
+<table align="center">
+  <tr>
+    <td><img src="assets/screenshots/arcade.webp" alt="Arcade" width="400"></td>
+    <td><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="400"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/league.webp" alt="League" width="400"></td>
+    <td><img src="assets/screenshots/settings.webp" alt="Themes" width="400"></td>
+  </tr>
+  <tr>
+    <td><img src="assets/screenshots/login.webp" alt="Login page" width="400"></td>
+    <td><img src="assets/screenshots/welcome.webp" alt="Welcome" width="400"></td>
+  </tr>
+</table>
 
 ### Install
 
