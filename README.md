@@ -5,111 +5,23 @@
 <h1 align="center">Smartschool Combined</h1>
 
 <p align="center">
-  Smartschool, maar dan beter: thema's, een hub met games, Ultimate Team-kaarten van je cijfers, een klascompetitie, schaken en meer.<br>
-  <b>Gratis voor Microsoft Edge.</b> / Smartschool, but better: themes, a hub with games, Ultimate Team cards from your grades, a class league, chess and more.
+  Smartschool, but better: themes, a hub with games, Ultimate Team cards built from your grades, a class league, chess and more.<br>
+  <b>Free for Microsoft Edge.</b>
 </p>
 
 <p align="center">
   <a href="https://microsoftedge.microsoft.com/addons/detail/smartschool-combined/lihijfpblolldifpiokeaohbdfcnmdhe"><b>Get it on Edge Add-ons</b></a>
-  &nbsp;·&nbsp; <a href="#nederlands">Nederlands</a>
-  &nbsp;·&nbsp; <a href="#english">English</a>
   &nbsp;·&nbsp; <a href="CHANGELOG.md">Changelog</a>
   &nbsp;·&nbsp; <a href="https://ko-fi.com/smartschoolcombined">Support on Ko-fi</a>
 </p>
 
 <p align="center">
-  <b>Vind je het handig? Steun de ontwikkeling. / Like it? Support development.</b><br><br>
-  <a href="https://ko-fi.com/smartschoolcombined"><img src="https://img.shields.io/badge/Ko--fi-Trakteer%20op%20een%20koffie-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Doneer via Ko-fi"></a>
-  <a href="https://paypal.me/smartschoolcombined"><img src="https://img.shields.io/badge/PayPal-Doneer-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Doneer via PayPal"></a>
+  <b>Like it? Support development.</b><br><br>
+  <a href="https://ko-fi.com/smartschoolcombined"><img src="https://img.shields.io/badge/Ko--fi-Buy%20me%20a%20coffee-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support via Ko-fi"></a>
+  <a href="https://paypal.me/smartschoolcombined"><img src="https://img.shields.io/badge/PayPal-Donate-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Donate via PayPal"></a>
 </p>
 
 ---
-
-## Nederlands
-
-**Smartschool, maar dan beter.** Smartschool Combined is een browserextensie die Smartschool mooier maakt en er spelletjes aan toevoegt. Alles draait in je eigen browser, op de Smartschool-pagina zelf. Er is geen apart account nodig.
-
-### 1. Pas het uiterlijk aan
-- Een vernieuwde inlogpagina in glass-stijl, met de knoppen voor Microsoft en de andere aanmeldopties.
-- Een transparante bovenbalk, als je dat wilt.
-- Widgets en notities op de startpagina.
-
-<p align="center"><img src="assets/screenshots/login.webp" alt="Vernieuwde inlogpagina" width="560"></p>
-
-### 2. Kies je eigen stijl
-- Thema's en live achtergronden: donker, licht, bergen, Japan, auto's, ruimte en meer.
-- Of maak een eigen thema met je eigen afbeelding.
-
-<p align="center"><img src="assets/screenshots/settings.webp" alt="Thema's en uiterlijk" width="560"></p>
-
-### 3. Alles op één plek: de Islands-hub
-Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eiland wordt hieronder verder uitgelegd.
-- **Arcade**: speelhal met games en munten.
-- **Stadion**: je Ultimate Team en de klascompetitie.
-- **Boerderij**: bouw je eigen boerderij.
-- **School**: snel naar je punten en evaluaties.
-- **Schaken**: tegen zes bots met klok en analyse na de partij, of samen op één scherm.
-- **Rekentoestel**: programma's naar je TI-84 sturen via USB (nu alleen voor de ingestelde klas).
-
-<p align="center"><img src="assets/screenshots/hub.webp" alt="De Islands-hub" width="700"></p>
-
-### 4. Unbox je punten
-- Elk nieuw cijfer opent als een pakje: eerst de onthulling met animatie.
-- Daarna verschijnt je kaart met een walkout-animatie.
-- Percentages staan naast de cijfers in het rooster.
-
-<p align="center"><img src="assets/screenshots/walkout.webp" alt="Walkout-animatie van je kaart" width="560"></p>
-
-### 5. Maak met je punten je eigen team
-- Je cijfers worden spelerskaarten. Elk vak is een kaart met een rating.
-- Stel je team op in een formatie en open pakketten.
-
-<p align="center"><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="560"></p>
-
-### 6. Speel tegen je klas
-- Speel elk weekend in de klascompetitie tegen je klasgenoten.
-
-<p align="center"><img src="assets/screenshots/league.webp" alt="Klascompetitie" width="560"></p>
-
-### 7. Speel games voor munten
-- In de arcade: Snake, 2048, Mines, Plinko, Roulette en Blackjack, met munten en records.
-
-<p align="center"><img src="assets/screenshots/arcade.webp" alt="Arcade" width="560"></p>
-
-### 8. Bouw met je munten je eigen boerderij
-- Zaaien, oogsten, bakken en bestellingen leveren.
-
-<p align="center"><img src="assets/screenshots/farm.webp" alt="Boerderij" width="560"></p>
-
-### 9. Extra munten: los puzzels op
-- Draai de buizen tot er een weg loopt van pijl naar pijl. Dat levert 100 munten op.
-- Soms komt er ook een logicapuzzel voorbij.
-
-<p align="center"><img src="assets/screenshots/puzzle.webp" alt="Puzzel met buizen" width="560"></p>
-
-### Installeren
-
-**Makkelijk (aangeraden):** installeer via [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/smartschool-combined/lihijfpblolldifpiokeaohbdfcnmdhe).
-
-**Handmatig (voor ontwikkelaars):**
-1. Download deze repository (groene knop **Code**, dan **Download ZIP**) en pak de zip uit.
-2. Open `edge://extensions` in Edge (of `chrome://extensions` in Chrome).
-3. Zet **Ontwikkelaarsmodus** aan.
-4. Klik op **Uitgepakte extensie laden** en kies de uitgepakte map (de map met `manifest.json`).
-5. Open Smartschool en vernieuw de pagina.
-
-Let op: deze broncode bevat geen achtergrondafbeeldingen, geluiden en Firebase-sleutels. De thema's tonen dan geen foto en de competitie werkt pas met je eigen Firebase-project (zie [Zelf bouwen](#zelf-bouwen-fork)). De versie in Edge Add-ons heeft alles.
-
-### Privacy
-
-- Je cijfers en instellingen blijven in je browser (`chrome.storage`).
-- Alleen de klascompetitie en de gedeelde rekentoestel-programma's gebruiken een server (Firebase Realtime Database, anoniem aangemeld).
-- Als je je inschrijft voor de competitie, komen je naam, je team en je kaarten op die server. Een kaart toont een vak en een rating die uit je cijfer komt, en je klasgenoten in de competitie kunnen die zien. Schrijf je niet in als je dat niet wilt.
-- Geen tracking, geen advertenties.
-
----
-
-## English
 
 **Smartschool, but better.** Smartschool Combined is a browser extension that makes Smartschool look better and adds games on top. Everything runs in your own browser, on the Smartschool page itself. No extra account is needed.
 
@@ -193,7 +105,7 @@ Note: this source does not include the wallpaper images, the sound effects or an
 
 ---
 
-## Zelf bouwen (fork)
+## Build it yourself (fork)
 
 Plain JavaScript, Manifest V3, no build step and no external libraries. The UI lives in a shadow DOM so Smartschool's own CSS cannot break it.
 
@@ -217,12 +129,11 @@ Tests: `node tests/chess-perft.js` and `node tests/chess-bot.js`.
 
 Smartschool is a trademark of its owner. This project is not affiliated with or endorsed by Smartschool.
 
-## Steun / Support
+## Support
 
-<p align="center"><img src="assets/screenshots/welcome.webp" alt="Welkomstvenster met steunknoppen" width="560"></p>
+<p align="center"><img src="assets/screenshots/welcome.webp" alt="Welcome window with support buttons" width="560"></p>
 
-Smartschool Combined is en blijft gratis, zonder betaalmuur. Wil je de ontwikkeling steunen? Trakteer op een koffie via [Ko-fi](https://ko-fi.com/smartschoolcombined) of [PayPal](https://paypal.me/smartschoolcombined).
-The extension is and stays free. If you want to support development, you can buy me a coffee on [Ko-fi](https://ko-fi.com/smartschoolcombined) or via [PayPal](https://paypal.me/smartschoolcombined).
+Smartschool Combined is and stays free, with no paywall. If you want to support development, you can buy me a coffee on [Ko-fi](https://ko-fi.com/smartschoolcombined) or via [PayPal](https://paypal.me/smartschoolcombined).
 
 ## License
 
