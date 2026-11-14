@@ -1,0 +1,23 @@
+# Private keys: copy firebase-config.example.js and fill in your own
+firebase-config.js
+
+# Secrets and local env
+.env
+.env.*
+*.pem
+*.key
+
+# Dependencies and tooling
+node_modules/
+.claude/
+graphify-out/
+
+# Media we may not redistribute
+assets/themes/*.jpg
+assets/audio/*.mp3
+assets/cards/
+
+# Builds and OS junk
+*.zip
+.DS_Store
+Thumbs.db

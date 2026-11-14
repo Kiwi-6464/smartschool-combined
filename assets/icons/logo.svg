@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Smartschool Combined: a bold, extruded Smartschool S in matte graphite
+       with a graduation cap resting on it. Deep matte black tile, one copper accent. -->
+  <defs>
+    <path id="s" transform="translate(4.6 19.5) scale(2.4 2.2)" d="M12.86 39.2864C14.7993 40.4588 18.6777 41.4783 22.4514 41.4783C31.5187 41.4783 35.8165 36.6867 35.8165 31.1304C35.8165 26.1859 32.8814 23.1784 26.7492 20.9355C22.0321 19.1514 19.9881 17.928 19.9881 15.2774C19.9881 13.2384 21.7177 11.1484 25.8058 11.1484C29.1078 11.1484 31.5711 12.1169 32.8814 12.7796L34.4014 7.73313C32.567 6.81559 29.7891 6 25.963 6C18.2585 6 13.4365 10.2309 13.4365 15.8891C13.4365 20.8336 17.1578 23.8411 23.028 25.8801C27.483 27.4603 29.265 28.9895 29.265 31.5892C29.265 34.3928 26.9589 36.2789 22.8707 36.2789C19.5688 36.2789 16.3716 35.2594 14.3275 34.087L12.86 39.2864Z"/>
+    <mask id="smask" maskUnits="userSpaceOnUse" x="0" y="0" width="128" height="128">
+      <use href="#s" fill="#fff" stroke="#fff" stroke-width="0.35" stroke-linejoin="round"/>
+    </mask>
+    <clipPath id="tileclip"><rect x="4" y="4" width="120" height="120" rx="28"/></clipPath>
+
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d0d0e"/>
+      <stop offset="1" stop-color="#050505"/>
+    </linearGradient>
+    <!-- a faint pool of light behind the S, so the shadows have something to fall on -->
+    <radialGradient id="pool" cx=".5" cy=".58" r=".5">
+      <stop offset="0" stop-color="#36363b"/>
+      <stop offset=".55" stop-color="#1e1e21" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#0d0d0e" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".13"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".02"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".05"/>
+    </linearGradient>
+
+    <linearGradient id="face" x1="0" y1="0" x2=".5" y2="1">
+      <stop offset="0" stop-color="#62666c"/>
+      <stop offset=".55" stop-color="#46494e"/>
+      <stop offset="1" stop-color="#323438"/>
+    </linearGradient>
+    <linearGradient id="board" gradientUnits="userSpaceOnUse" x1="30" y1="10" x2="96" y2="36">
+      <stop offset="0" stop-color="#6c7076"/>
+      <stop offset="1" stop-color="#3a3d41"/>
+    </linearGradient>
+    <linearGradient id="band" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#46494e"/>
+      <stop offset="1" stop-color="#26282b"/>
+    </linearGradient>
+    <linearGradient id="copper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d08550"/>
+      <stop offset="1" stop-color="#9c5a2e"/>
+    </linearGradient>
+
+    <filter id="cast" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3.4"/>
+    </filter>
+    <filter id="tight" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+  </defs>
+
+  <!-- tile -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#tile)"/>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#pool)"/>
+
+  <g clip-path="url(#tileclip)">
+    <!-- shadows: a wide soft one and a tight contact one -->
+    <g fill="#000">
+      <use href="#s" fill="#000" stroke="#000" stroke-width="0.35" stroke-linejoin="round" transform="translate(6 9)" opacity=".95" filter="url(#cast)"/>
+      <use href="#s" fill="#000" stroke="#000" stroke-width="0.35" stroke-linejoin="round" transform="translate(4 6.300000000000001)" opacity=".9" filter="url(#tight)"/>
+      <g transform="translate(64 30) scale(.9) translate(-64 -30) translate(-1 -7) rotate(-11 64 30) translate(3 6)" filter="url(#cast)" opacity=".9"><path d="M50 30v9c0 4 6.5 6.5 14 6.5s14-2.5 14-6.5v-9L64 36z"/><path d="M64 10l35 13-35 13-35-13z"/></g>
+    </g>
+
+    <!-- the S: extruded side, then the face with a lit top-left rim -->
+    <use href="#s" fill="#141417" stroke="#141417" stroke-width="0.35" stroke-linejoin="round" transform="translate(3.00 4.80)"/>
+    <use href="#s" fill="#18181b" stroke="#18181b" stroke-width="0.35" stroke-linejoin="round" transform="translate(2.50 4.00)"/>
+    <use href="#s" fill="#1b1b1e" stroke="#1b1b1e" stroke-width="0.35" stroke-linejoin="round" transform="translate(2.00 3.20)"/>
+    <use href="#s" fill="#1f1f22" stroke="#1f1f22" stroke-width="0.35" stroke-linejoin="round" transform="translate(1.50 2.40)"/>
+    <use href="#s" fill="#232326" stroke="#232326" stroke-width="0.35" stroke-linejoin="round" transform="translate(1.00 1.60)"/>
+    <use href="#s" fill="#262629" stroke="#262629" stroke-width="0.35" stroke-linejoin="round" transform="translate(0.50 0.80)"/>
+    <g mask="url(#smask)">
+      <use href="#s" fill="#9a9ea5" stroke="#9a9ea5" stroke-width="0.35" stroke-linejoin="round"/>
+      <use href="#s" fill="url(#face)" stroke="url(#face)" stroke-width="0.35" stroke-linejoin="round" transform="translate(.45 .7)"/>
+    </g>
+
+    <!-- cap: dark rim separates it from the S, board has thickness -->
+    <g transform="translate(64 30) scale(.9) translate(-64 -30) translate(-1 -7) rotate(-11 64 30)">
+      <path d="M50 30v9c0 4 6.5 6.5 14 6.5s14-2.5 14-6.5v-9L64 36z" fill="#070708" stroke="#070708" stroke-width="3.2" stroke-linejoin="round"/>
+      <path d="M64 10l35 13-35 13-35-13z" transform="translate(0 2.7)" fill="#070708" stroke="#070708" stroke-width="3.2" stroke-linejoin="round"/>
+      <path d="M50 30v9c0 4 6.5 6.5 14 6.5s14-2.5 14-6.5v-9L64 36z" fill="url(#band)"/>
+      <path d="M64 10l35 13-35 13-35-13z" transform="translate(0 2.7)" fill="#1c1d21"/>
+      <path d="M64 10l35 13-35 13-35-13z" transform="translate(0 1.8)" fill="#1c1d21"/>
+      <path d="M64 10l35 13-35 13-35-13z" transform="translate(0 0.9)" fill="#1c1d21"/>
+      <path d="M64 10l35 13-35 13-35-13z" fill="url(#board)"/>
+      <path d="M29 23l35-13 35 13" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round"/>
+    </g>
+
+    <!-- tassel: matte copper, the one accent -->
+    <g transform="translate(64 30) scale(.9) translate(-64 -30) translate(-1 -7) rotate(-11 64 30)">
+      <path d="M64 23l31 4v14" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" transform="translate(.8 1.2)"/>
+      <path d="M64 23l31 4v14" fill="none" stroke="#c07a46" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M92 39.5h6l1.6 9h-9.2z" fill="url(#copper)"/>
+      <circle cx="64" cy="23" r="3.2" fill="url(#copper)"/>
+      <circle cx="63.2" cy="22.2" r="1.1" fill="#fff" fill-opacity=".35"/>
+    </g>
+  </g>
+
+  <!-- tile rim light -->
+  <rect x="4.6" y="4.6" width="118.8" height="118.8" rx="27.4" fill="none" stroke="url(#edge)" stroke-width="1.2"/>
+</svg>

@@ -1,0 +1,64 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "plants": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null",
+        ".validate": "$userId.matches(/^[A-Za-z0-9_-]{1,64}$/) && newData.hasChildren(['plantedAt', 'updatedAt']) && newData.child('plantedAt').isNumber()"
+      }
+    },
+    "pets": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null",
+        ".validate": "$userId.matches(/^[A-Za-z0-9_-]{1,64}$/) && newData.hasChildren(['adoptedAt', 'species', 'name', 'updatedAt']) && newData.child('adoptedAt').isNumber() && newData.child('name').isString() && newData.child('name').val().length <= 16"
+      }
+    },
+    "pets2": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null",
+        ".validate": "$userId.matches(/^[A-Za-z0-9_-]{1,64}$/) && newData.hasChildren(['adoptedAt', 'species', 'name', 'updatedAt']) && newData.child('adoptedAt').isNumber() && newData.child('name').isString() && newData.child('name').val().length <= 16"
+      }
+    },
+    "economies": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null",
+        ".validate": "$userId.matches(/^[A-Za-z0-9_-]{1,64}$/) && newData.hasChildren(['coins', 'updatedAt']) && newData.child('coins').isNumber() && newData.child('updatedAt').isNumber()"
+      }
+    },
+    "farms": {
+      "$userId": {
+        ".read": true,
+        ".write": "auth != null",
+        ".validate": "$userId.matches(/^[A-Za-z0-9_-]{1,64}$/) && newData.hasChildren(['data', 'updatedAt']) && newData.child('data').isString() && newData.child('data').val().length <= 60000 && newData.child('updatedAt').isNumber()"
+      }
+    },
+    "leagues": {
+      ".read": true,
+      "$class": {
+        "members": {
+          "$userId": {
+            ".write": "auth != null && (!data.exists() || !data.child('authUid').exists() || data.child('authUid').val() === auth.uid) && (!newData.exists() || newData.child('authUid').val() === auth.uid)",
+            ".validate": "newData.hasChildren(['userId', 'displayName', 'className', 'teamData', 'lastUpdated', 'authUid']) && newData.child('userId').val() === $userId && newData.child('className').val() === $class && newData.child('displayName').isString() && newData.child('displayName').val().length <= 40 && newData.child('teamData').isString() && newData.child('teamData').val().length <= 8000 && newData.child('lastUpdated').isNumber()"
+          }
+        },
+        "matches": {
+          "$weekId": {
+            ".write": "auth != null && !data.exists() && newData.exists()",
+            ".validate": "$weekId.matches(/^[0-9]{4}-W[0-9]{2}$/) && newData.hasChildren(['weekend', 'matches']) && newData.child('weekend').val() === $weekId"
+          }
+        },
+        "calculatorPrograms": {
+          "$programId": {
+            ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || root.child('leagues').child($class).child('members').child('YOUR_SMARTSCHOOL_USER_ID').child('authUid').val() === auth.uid)",
+            ".validate": "$programId.matches(/^p[a-z0-9]{4,24}$/) && newData.hasChildren(['title', 'fileName', 'kind', 'size', 'data', 'addedAt']) && newData.child('data').isString() && newData.child('data').val().length <= 360000 && newData.child('size').isNumber() && newData.child('size').val() <= 262144"
+          }
+        }
+      }
+    }
+  }
+}
