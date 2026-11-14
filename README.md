@@ -23,10 +23,6 @@
   <a href="https://paypal.me/smartschoolcombined"><img src="https://img.shields.io/badge/PayPal-Doneer-00457C?style=for-the-badge&logo=paypal&logoColor=white" alt="Doneer via PayPal"></a>
 </p>
 
-<p align="center">
-  <img src="assets/screenshots/hub.webp" alt="The Islands hub" width="860">
-</p>
-
 ---
 
 ## Nederlands
@@ -38,9 +34,13 @@
 - Een transparante bovenbalk, als je dat wilt.
 - Widgets en notities op de startpagina.
 
+<p align="center"><img src="assets/screenshots/login.webp" alt="Vernieuwde inlogpagina" width="560"></p>
+
 ### 2. Kies je eigen stijl
 - Thema's en live achtergronden: donker, licht, bergen, Japan, auto's, ruimte en meer.
 - Of maak een eigen thema met je eigen afbeelding.
+
+<p align="center"><img src="assets/screenshots/settings.webp" alt="Thema's en uiterlijk" width="560"></p>
 
 ### 3. Alles op één plek: de Islands-hub
 Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eiland wordt hieronder verder uitgelegd.
@@ -51,6 +51,8 @@ Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eila
 - **Schaken**: tegen zes bots met klok en analyse na de partij, of samen op één scherm.
 - **Rekentoestel**: programma's naar je TI-84 sturen via USB (nu alleen voor de ingestelde klas).
 
+<p align="center"><img src="assets/screenshots/hub.webp" alt="De Islands-hub" width="700"></p>
+
 ### 4. Unbox je punten
 - Elk nieuw cijfer opent als een pakje: eerst de onthulling met animatie.
 - Daarna verschijnt je kaart met een walkout-animatie.
@@ -60,33 +62,28 @@ Eén scherm met zes eilanden, te openen met de knop "Islands" bovenaan. Elk eila
 - Je cijfers worden spelerskaarten. Elk vak is een kaart met een rating.
 - Stel je team op in een formatie en open pakketten.
 
+<p align="center"><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="560"></p>
+
 ### 6. Speel tegen je klas
 - Speel elk weekend in de klascompetitie tegen je klasgenoten.
+
+<p align="center"><img src="assets/screenshots/league.webp" alt="Klascompetitie" width="560"></p>
 
 ### 7. Speel games voor munten
 - In de arcade: Snake, 2048, Mines, Plinko, Roulette en Blackjack, met munten en records.
 
+<p align="center"><img src="assets/screenshots/arcade.webp" alt="Arcade" width="560"></p>
+
 ### 8. Bouw met je munten je eigen boerderij
 - Zaaien, oogsten, bakken en bestellingen leveren.
+
+<p align="center"><img src="assets/screenshots/farm.webp" alt="Boerderij" width="560"></p>
 
 ### 9. Extra munten: los puzzels op
 - Draai de buizen tot er een weg loopt van pijl naar pijl. Dat levert 100 munten op.
 - Soms komt er ook een logicapuzzel voorbij.
 
-<table align="center">
-  <tr>
-    <td><img src="assets/screenshots/arcade.webp" alt="Arcade" width="400"></td>
-    <td><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="400"></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/league.webp" alt="Competitie" width="400"></td>
-    <td><img src="assets/screenshots/settings.webp" alt="Thema's" width="400"></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/login.webp" alt="Inlogpagina" width="400"></td>
-    <td><img src="assets/screenshots/welcome.webp" alt="Welkom" width="400"></td>
-  </tr>
-</table>
+<p align="center"><img src="assets/screenshots/puzzle.webp" alt="Puzzel met buizen" width="560"></p>
 
 ### Installeren
 
@@ -119,9 +116,13 @@ Let op: deze broncode bevat geen achtergrondafbeeldingen, geluiden en Firebase-s
 - An optional transparent top bar.
 - Widgets and notes on the start page.
 
+<p align="center"><img src="assets/screenshots/login.webp" alt="Redesigned login page" width="560"></p>
+
 ### 2. Pick your own style
 - Themes and live wallpapers: dark, light, mountains, Japan, cars, space and more.
 - Or make a custom theme with your own image.
+
+<p align="center"><img src="assets/screenshots/settings.webp" alt="Themes and look" width="560"></p>
 
 ### 3. Everything in one place: the Islands hub
 One screen with six islands, opened from the "Islands" button in the top bar. Each island is explained further below.
@@ -132,6 +133,8 @@ One screen with six islands, opened from the "Islands" button in the top bar. Ea
 - **Chess**: play six bots with a clock and post-game analysis, or two players on one screen.
 - **Calculator**: send programs to your TI-84 over USB (currently limited to one configured class).
 
+<p align="center"><img src="assets/screenshots/hub.webp" alt="The Islands hub" width="700"></p>
+
 ### 4. Unbox your points
 - Every new grade opens like a pack: first the reveal animation.
 - Then your card appears with a walkout animation.
@@ -141,33 +144,28 @@ One screen with six islands, opened from the "Islands" button in the top bar. Ea
 - Your grades become player cards: every subject is a card with a rating.
 - Pick a formation and open packs.
 
+<p align="center"><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="560"></p>
+
 ### 6. Play against your class
 - Play your classmates every weekend in the class league.
+
+<p align="center"><img src="assets/screenshots/league.webp" alt="Class league" width="560"></p>
 
 ### 7. Play games for coins
 - In the arcade: Snake, 2048, Mines, Plinko, Roulette and Blackjack, with coins and high scores.
 
+<p align="center"><img src="assets/screenshots/arcade.webp" alt="Arcade" width="560"></p>
+
 ### 8. Build your own farm with your coins
 - Plant, harvest, bake and deliver orders.
+
+<p align="center"><img src="assets/screenshots/farm.webp" alt="Farm" width="560"></p>
 
 ### 9. Extra coins: solve puzzles
 - Turn the pipes until one track runs from arrow to arrow. That gives 100 coins.
 - Now and then a logic puzzle shows up too.
 
-<table align="center">
-  <tr>
-    <td><img src="assets/screenshots/arcade.webp" alt="Arcade" width="400"></td>
-    <td><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="400"></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/league.webp" alt="League" width="400"></td>
-    <td><img src="assets/screenshots/settings.webp" alt="Themes" width="400"></td>
-  </tr>
-  <tr>
-    <td><img src="assets/screenshots/login.webp" alt="Login page" width="400"></td>
-    <td><img src="assets/screenshots/welcome.webp" alt="Welcome" width="400"></td>
-  </tr>
-</table>
+<p align="center"><img src="assets/screenshots/puzzle.webp" alt="Pipe puzzle" width="560"></p>
 
 ### Install
 
@@ -216,6 +214,8 @@ Tests: `node tests/chess-perft.js` and `node tests/chess-bot.js`.
 Smartschool is a trademark of its owner. This project is not affiliated with or endorsed by Smartschool.
 
 ## Steun / Support
+
+<p align="center"><img src="assets/screenshots/welcome.webp" alt="Welkomstvenster met steunknoppen" width="560"></p>
 
 Smartschool Combined is en blijft gratis, zonder betaalmuur. Wil je de ontwikkeling steunen? Trakteer op een koffie via [Ko-fi](https://ko-fi.com/smartschoolcombined) of [PayPal](https://paypal.me/smartschoolcombined).
 The extension is and stays free. If you want to support development, you can buy me a coffee on [Ko-fi](https://ko-fi.com/smartschoolcombined) or via [PayPal](https://paypal.me/smartschoolcombined).
