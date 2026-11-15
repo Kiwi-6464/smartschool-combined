@@ -1149,7 +1149,7 @@
       observer.observe(document.documentElement, { childList: true, subtree: true });
     }
     // The observer only fires on mutations; this covers the 3s/15s limits.
-    timer = setInterval(check, 500);
+    timer = setInterval(check, 120);
   }
 
   function sscWidgetSystemStart() {

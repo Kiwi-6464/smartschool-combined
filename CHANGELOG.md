@@ -1,6 +1,7 @@
 # Changelog
 
 ## 4.10.0
+- Faster grades: the pages of your results load several at a time, and the widgets, the unboxing, the percentages and the team share one request instead of each asking again.
 - The class league and the calculator are hidden completely for classes they are not meant for (no tab, no button, no "no access" message). Chess takes the small square, and the calculator becomes the wide bar underneath only when it is available.
 - The stadium and calculator islands are back to their original hand-drawn art; the other islands keep the 3D renders.
 - Calmer glass in the hub: the white sheen and inner glow are about half as strong in the default theme.

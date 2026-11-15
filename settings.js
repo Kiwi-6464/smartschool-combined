@@ -305,17 +305,31 @@
     return paginate(page);
   }
 
+  /*
+   * Pages come in waves of four requests at once instead of one after the other
+   * (a student with 150+ grades used to wait for 4+ round trips in a row). A page
+   * past the end may answer with an error: that is only ignored when an earlier
+   * page of the same wave was already short, i.e. the list really ended there.
+   */
   function paginate(fetchPage) {
+    var WAVE = 4;
     var all = [];
-    function step(n) {
-      return fetchPage(n).then(function (data) {
-        var rows = Array.isArray(data) ? data : [];
-        all = all.concat(rows);
-        if (rows.length < PAGE_SIZE) return all;
-        return step(n + 1);
+    function wave(start, size) {
+      var jobs = [];
+      for (var i = 0; i < size; i++) {
+        jobs.push(fetchPage(start + i).then(function (rows) { return { rows: rows }; }, function (err) { return { err: err }; }));
+      }
+      return Promise.all(jobs).then(function (pages) {
+        for (var j = 0; j < pages.length; j++) {
+          if (pages[j].err) throw pages[j].err; // every earlier page was full, so this one should exist
+          var rows = Array.isArray(pages[j].rows) ? pages[j].rows : [];
+          all = all.concat(rows);
+          if (rows.length < PAGE_SIZE) return all;
+        }
+        return wave(start + size, WAVE);
       });
     }
-    return step(1);
+    return wave(1, 1); // most students fit on page 1: do not spend 3 more requests on them
   }
 
   function askBackground() {
@@ -337,14 +351,33 @@
    * (as the spec asks), falls back to a same-origin page fetch, which always
    * carries the Smartschool session cookie.
    */
+  // The widgets, the unboxing, the percentages and the team all ask at page load. They share
+  // one request, and a result stays valid for 20 s, so a page does not fetch every grade 3 times.
+  var rawShared = null;
+  var rawAt = 0;
+  var rawRaw = null;
+  var RAW_TTL_MS = 20000;
+
   function sscFetchRawGrades() {
-    return askBackground()
-      .then(function (raw) {
-        return raw;
-      })
+    if (rawRaw && Date.now() - rawAt < RAW_TTL_MS) return Promise.resolve(rawRaw);
+    if (rawShared) return rawShared;
+    rawShared = askBackground()
       .catch(function () {
         return rawPagesDirect();
-      });
+      })
+      .then(
+        function (raw) {
+          rawRaw = raw;
+          rawAt = Date.now();
+          rawShared = null;
+          return raw;
+        },
+        function (err) {
+          rawShared = null;
+          throw err;
+        }
+      );
+    return rawShared;
   }
 
   function sscFetchGrades() {
