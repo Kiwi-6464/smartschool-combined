@@ -1099,7 +1099,9 @@
       entry &&
       typeof entry.granted === "boolean" &&
       typeof entry.checkedAt === "number" &&
-      Date.now() - entry.checkedAt < CALC_TTL_MS
+      Date.now() - entry.checkedAt < CALC_TTL_MS &&
+      // An older build cached "granted" without a class; ask again instead of trusting it.
+      !(entry.granted && !entry.className)
     );
   }
 
@@ -1167,6 +1169,21 @@
     });
   };
 
+  /**
+   * What this account may see at all: { calc, league, className }. The league
+   * is for TWE classes ("TWE" as its own token, the same test as league.js,
+   * so "tweede" never matches), the calculator for the class above. Both are
+   * false while the class is unknown: the Hub then hides them completely.
+   */
+  var LEAGUE_RX = /(^|[^a-z])twe([^a-z]|$)/i;
+
+  window.sscClassAccess = function (force) {
+    return window.sscCalcAccess(force).then(function (a) {
+      var name = (a && a.className) || "";
+      return { calc: !!(a && a.granted), league: LEAGUE_RX.test(name), className: name };
+    });
+  };
+
   /* --- the access check --- */
 
   /**
@@ -1175,7 +1192,7 @@
    * newest evaluation does not always carry one.
    */
   function classFromApi() {
-    var url = location.origin + "/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=1";
+    var url = location.origin + "/results/api/v1/evaluations/?pageNumber=1&itemsOnPage=25";
     return fetch(url, {
       credentials: "include",
       headers: { Accept: "application/json" },
@@ -1236,13 +1253,9 @@
       if (domName) return { granted: true, className: domName, method: "dom" };
       var urlName = classFromUrl();
       if (urlName) return { granted: true, className: urlName, method: "url" };
-      // The last resort is deliberately permissive: a false "no access" hides
-      // the whole feature from the class it was built for. Replace this branch
-      // once the API check has proven reliable on the real account.
-      console.warn(
-        "[SSC] rekenmachine: klas niet vastgesteld (" + reason + "); toegang voorlopig toegestaan."
-      );
-      return { granted: true, className: "", method: "fallback" };
+      // Unknown class: closed. Everyone outside the class must never see the calculator or the league.
+      console.warn("[SSC] klas niet vastgesteld (" + reason + "); rekentoestel en competitie blijven verborgen.");
+      return { granted: false, className: "", method: "fallback" };
     }
 
     return classFromApi().then(

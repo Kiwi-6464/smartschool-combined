@@ -1799,9 +1799,14 @@
     ));
     head.appendChild(titles);
 
+    // Other classes never see the league: no tab at all, not even a "no access" notice.
+    var inLeague = leagueAllowed();
+    if (!inLeague && managerTab === "league") managerTab = "team";
     var tabs = h("div", "ssc-tm-tabs");
     tabs.setAttribute("role", "tablist");
-    [["team", "Team"], ["league", "Competitie"]].forEach(function (t) {
+    [["team", "Team"], ["league", "Competitie"]].filter(function (t) {
+      return t[0] !== "league" || inLeague;
+    }).forEach(function (t) {
       var tab = t[0] === "league" ? hi("button", "ssc-tm-tab", "trophy", t[1]) : h("button", "ssc-tm-tab", t[1]);
       tab.type = "button";
       tab.setAttribute("role", "tab");
@@ -1817,7 +1822,7 @@
       });
       tabs.appendChild(tab);
     });
-    head.appendChild(tabs);
+    if (inLeague) head.appendChild(tabs); // a lone "Team" tab would be pointless
 
     var close = hi("button", "ssc-tm-close", "close", "Sluiten");
     close.type = "button";
@@ -2061,7 +2066,7 @@
     join.addEventListener("click", function () {
       joinLeague();
     });
-    foot.appendChild(join);
+    if (allowed) foot.appendChild(join); // other classes get no league button at all
 
     var blocked = blockedOnPitch();
     if (blocked) {
@@ -2624,7 +2629,7 @@
     join.addEventListener("click", function () {
       joinLeague();
     });
-    foot.appendChild(join);
+    if (allowed) foot.appendChild(join); // other classes get no league button at all
 
     if (canSimulate) {
       var sim = hi("button", "ssc-tm-btn ssc-tm-btn--battle", "ball", "Simuleer Weekend");

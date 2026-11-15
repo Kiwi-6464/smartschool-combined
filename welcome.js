@@ -18,14 +18,26 @@
   var DONATE_URL = "https://ko-fi.com/smartschoolcombined";
   var PAYPAL_URL = "https://paypal.me/smartschoolcombined";
 
-  var FEATURES = [
-    ["Thema's en live achtergronden", "Kies een stijl, ook met bewegende wallpaper."],
-    ["Islands", "Eén hub met Arcade, School, Stadion, Boerderij, Schaken en je rekentoestel."],
-    ["Ultimate Team", "Verzamel kaarten, bouw je team en bekijk de walkout-animaties."],
-    ["Competitie", "Vergelijk je team met je klas in een echte ranglijst."],
-    ["Schaken", "Tegen bots met klok en analyse, of samen op één scherm."],
-    ["Arcade", "Snake, 2048, Mines, Plinko, Roulette en Blackjack."],
-  ];
+  /* The league and the calculator are only for one class; everyone else must not read about them. */
+  function features(access) {
+    return [
+      ["Thema's en live achtergronden", "Kies een stijl, ook met bewegende wallpaper."],
+      ["Islands", "Eén hub met Arcade, School, Stadion, Boerderij, Schaken" + (access.calc ? " en je rekentoestel." : " en meer.")],
+      ["Ultimate Team", "Verzamel kaarten, bouw je team en bekijk de walkout-animaties."],
+      access.league && ["Competitie", "Vergelijk je team met je klas in een echte ranglijst."],
+      ["Schaken", "Tegen bots met klok en analyse, of samen op één scherm."],
+      ["Arcade", "Snake, 2048, Mines, Plinko, Roulette en Blackjack."],
+    ].filter(Boolean);
+  }
+
+  function classAccess() {
+    var none = { calc: false, league: false };
+    var ask = typeof window.sscClassAccess === "function" ? window.sscClassAccess() : Promise.resolve(none);
+    return Promise.race([
+      ask.then(function (a) { return a || none; }, function () { return none; }),
+      new Promise(function (resolve) { setTimeout(function () { resolve(none); }, 2000); }),
+    ]);
+  }
 
   var host = null;
   var returnFocus = null;
@@ -174,12 +186,18 @@
   }
 
   function showWelcome(done) {
+    classAccess().then(function (access) {
+      renderWelcome(access, done);
+    });
+  }
+
+  function renderWelcome(access, done) {
     var m = open("Welkom bij Smartschool Combined");
     m.card.appendChild(el("p", "wl-kicker", "Nieuw in " + (chrome.runtime.getManifest().version)));
     m.card.appendChild(el("h2", "wl-title", "Welkom bij Smartschool Combined"));
     m.card.appendChild(el("p", "wl-sub", "Dit zit er nu in. Open de Islands-knop bovenaan om te beginnen."));
     var ul = el("ul", "wl-list");
-    FEATURES.forEach(function (f) {
+    features(access).forEach(function (f) {
       var li = el("li");
       li.appendChild(el("b", null, f[0]));
       li.appendChild(el("span", null, f[1]));

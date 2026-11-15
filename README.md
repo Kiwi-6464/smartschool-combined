@@ -41,11 +41,11 @@
 ### 3. Everything in one place: the Islands hub
 One screen with six islands, opened from the "Islands" button in the top bar. Each island is explained further below.
 - **Arcade**: a game hall with coins.
-- **Stadium**: your Ultimate Team and the class league.
+- **Stadium**: your Ultimate Team (and the class league, for the classes it is open to).
 - **Farm**: build your own farm.
 - **School**: a shortcut to your grades and evaluations.
 - **Chess**: play six bots with a clock and post-game analysis, or two players on one screen.
-- **Calculator**: send programs to your TI-84 over USB (currently limited to one configured class).
+- **Calculator**: send programs to your TI-84 over USB. It only exists for the one class it was made for: other users never see it, and chess then takes its place.
 
 <p align="center"><img src="assets/screenshots/hub.webp" alt="The Islands hub" width="700"></p>
 
@@ -63,7 +63,7 @@ One screen with six islands, opened from the "Islands" button in the top bar. Ea
 <p align="center"><img src="assets/screenshots/team.webp" alt="Ultimate Team" width="560"></p>
 
 ### 6. Play against your class
-- Play your classmates every weekend in the class league.
+- Play your classmates every weekend in the class league. The league is only open to some classes; for everyone else the Competition tab simply does not exist.
 
 <p align="center"><img src="assets/screenshots/league.webp" alt="Class league" width="560"></p>
 

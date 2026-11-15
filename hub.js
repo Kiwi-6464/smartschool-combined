@@ -110,7 +110,7 @@
     { id: "school", kicker: "Resultaten", title: "School", sub: "Je punten en evaluaties.", c1: "var(--hb-blue)", c2: "var(--hb-acc)" },
     { id: "stadion", kicker: "Ultimate Team", title: "Stadion", sub: "Je team en de competitie.", c1: "var(--hb-green)", c2: "var(--hb-gold)" },
     { id: "farm", kicker: "Bouw & oogst", title: "Boerderij", sub: "Zaai, oogst, bak en lever bestellingen.", c1: "var(--hb-orange)", c2: "var(--hb-red)" },
-    { id: "chess", kicker: "Denksport", title: "Schaken", sub: "Tegen bots of samen op één scherm, met klok en analyse.", c1: "var(--hb-ink)", c2: "var(--hb-acc)" },
+    { id: "chess", kicker: "Denksport", title: "Schaken", sub: "Tegen bots of een vriend.", c1: "var(--hb-ink)", c2: "var(--hb-acc)" },
     { id: "calc", kicker: "TI-84", title: "Rekentoestel", sub: "Programma's op je rekenmachine.", c1: "var(--hb-blue)", c2: "var(--hb-ink)" },
   ];
 
@@ -426,8 +426,14 @@
     paintClock();
     clearInterval(clockTimer);
     clockTimer = setInterval(paintClock, 20000);
-    if (initial === "calc") showCalc();
-    else showHome();
+    if (initial === "calc") {
+      // The calculator only exists for its class; anyone else lands on the islands.
+      homeAccess().then(function (a) {
+        if (!isOpen()) return;
+        if (a.calc) showCalc();
+        else showHome();
+      });
+    } else showHome();
     root.scrollTop = 0;
   }
 
@@ -535,12 +541,41 @@
     return h("span", "isl-chip" + (cls ? " " + cls : ""), text);
   }
 
+  var homeToken = 0;
+
+  /** { calc, league } for this account; closed (both false) when unknown or slow, so other classes never see them. */
+  function homeAccess() {
+    var none = { calc: false, league: false };
+    var ask = typeof window.sscClassAccess === "function" ? window.sscClassAccess() : Promise.resolve(none);
+    return Promise.race([
+      ask.then(function (a) { return a || none; }, function () { return none; }),
+      new Promise(function (resolve) { setTimeout(function () { resolve(none); }, 2500); }),
+    ]);
+  }
+
   function showHome() {
     clearView();
     view = "home";
+    var token = ++homeToken;
+    homeAccess().then(function (access) {
+      if (token === homeToken && isOpen() && view === "home") renderHome(access);
+    });
+  }
+
+  /*
+   * The calculator and the league are only for one class. Everyone else gets
+   * no trace of them: no calculator island, no "competitie" on the stadium.
+   * Chess then takes the small square and the calculator, when there, is the
+   * wide bar at the bottom.
+   */
+  function renderHome(access) {
     var grid = h("div", "hub-home hub-view");
+    if (access.calc) grid.setAttribute("data-calc", "1");
     var metas = {};
-    ISLANDS.forEach(function (def, i) {
+    ISLANDS.filter(function (def) {
+      return def.id !== "calc" || access.calc;
+    }).forEach(function (def, i) {
+      if (def.id === "stadion" && !access.league) def = Object.assign({}, def, { sub: "Je team en je kaarten." });
       var c = islandCard(def, i);
       metas[def.id] = c.meta;
       grid.appendChild(c.node);
@@ -557,8 +592,8 @@
       if (out[1].snake) metas.arcade.appendChild(chip("Snake-record " + fmt(out[1].snake)));
     });
     metas.school.appendChild(chip(/\/results/.test(location.pathname) ? "Je bent hier" : "Naar je punten"));
-    metas.stadion.appendChild(chip("Team · competitie"));
-    metas.calc.appendChild(chip("Verbind via USB"));
+    metas.stadion.appendChild(chip(access.league ? "Team · competitie" : "Team"));
+    if (metas.calc) metas.calc.appendChild(chip("Verbind via USB"));
     ["6 bots", "Klok", "Analyse"].forEach(function (n) {
       metas.chess.appendChild(chip(n));
     });
@@ -1308,7 +1343,7 @@
           }
         });
       } else {
-        body.appendChild(h("div", "calc-denied", "Je hebt geen toegang tot deze programmas. Alleen voor de ingestelde klas."));
+        body.appendChild(h("div", "calc-denied", "Dit is niet beschikbaar voor jouw klas."));
       }
       recheck();
     }
@@ -1480,12 +1515,17 @@
 
     /* islands grid */
     ".hub-home { flex: 1; display: grid; gap: 20px; grid-template-columns: repeat(4, minmax(0, 1fr));",
-    "  grid-template-rows: repeat(2, minmax(250px, 1fr)) minmax(200px, auto); grid-template-areas: 'arcade arcade school stadion' 'arcade arcade farm calc' 'chess chess chess chess'; }",
+    "  grid-template-rows: repeat(2, minmax(260px, 1fr)); grid-template-areas: 'arcade arcade school stadion' 'arcade arcade farm chess'; }",
+    /* only when the calculator is allowed (set by hub.js): it becomes the wide bar underneath */
+    ".hub-home[data-calc] { grid-template-rows: repeat(2, minmax(260px, 1fr)) minmax(200px, auto);",
+    "  grid-template-areas: 'arcade arcade school stadion' 'arcade arcade farm chess' 'calc calc calc calc'; }",
     ".isl--arcade { grid-area: arcade; } .isl--school { grid-area: school; } .isl--stadion { grid-area: stadion; }",
-    ".isl--farm { grid-area: farm; } .isl--calc { grid-area: calc; } .isl--chess { grid-area: chess; min-height: 200px; }",
-    "@media (max-width: 980px) { .hub-home { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(250px, auto);",
-    "  grid-template-areas: 'arcade arcade' 'school stadion' 'farm calc' 'chess chess'; } .hub-shell { padding: 18px 16px 28px; } .hub-clock { display: none; } }",
-    "@media (max-width: 560px) { .hub-home { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'arcade' 'school' 'stadion' 'farm' 'calc' 'chess'; } }",
+    ".isl--farm { grid-area: farm; } .isl--chess { grid-area: chess; } .isl--calc { grid-area: calc; min-height: 200px; }",
+    "@media (max-width: 980px) { .hub-home, .hub-home[data-calc] { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(250px, auto);",
+    "  grid-template-areas: 'arcade arcade' 'school stadion' 'farm chess'; } .hub-home[data-calc] { grid-template-areas: 'arcade arcade' 'school stadion' 'farm chess' 'calc calc'; }",
+    "  .hub-shell { padding: 18px 16px 28px; } .hub-clock { display: none; } }",
+    "@media (max-width: 560px) { .hub-home, .hub-home[data-calc] { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'arcade' 'school' 'stadion' 'farm' 'chess'; }",
+    "  .hub-home[data-calc] { grid-template-areas: 'arcade' 'school' 'stadion' 'farm' 'chess' 'calc'; } .isl--arcade { min-height: 320px; } }",
 
     ".isl { position: relative; perspective: 1100px; cursor: pointer; outline: none; border-radius: 30px; min-height: 250px;",
     "  animation: isl-in .8s cubic-bezier(.2,.9,.25,1) both; animation-delay: calc(var(--i) * 70ms + 60ms); }",
@@ -1517,7 +1557,7 @@
     ".isl-art { position: absolute; right: 3%; bottom: 4%; width: 54%; max-width: 230px; transform: translateZ(64px); pointer-events: none; }",
     ".isl--arcade .isl-art { right: 3%; bottom: 8%; width: 56%; max-width: 470px; }",
     /* the wide chess card: size the render by height so it never leaves the card */
-    ".isl--chess .isl-art { width: auto; height: 86%; max-width: none; right: 4%; bottom: 6%; } .isl--chess .isl-float, .isl--chess .isl-float img { height: 100%; width: auto; }",
+    ".isl--calc .isl-art { width: auto; height: 86%; max-width: none; right: 4%; bottom: 6%; } .isl--calc .isl-float, .isl--calc .isl-float img { height: 100%; width: auto; }",
     ".isl-float { position: relative; animation: isl-bob 6.5s ease-in-out infinite; animation-delay: calc(var(--i) * -1.3s); will-change: transform; }",
     ".isl-float img { display: block; width: 100%; height: auto; user-select: none; }",
     ".isl-shadow { position: absolute; left: 22%; right: 22%; bottom: -6%; height: 12%; border-radius: 50%;",
