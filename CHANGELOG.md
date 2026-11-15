@@ -1,7 +1,11 @@
 # Changelog
 
-## 4.1.0
+## 4.10.0
 - The class league and the calculator are hidden completely for classes they are not meant for (no tab, no button, no "no access" message). Chess takes the small square, and the calculator becomes the wide bar underneath only when it is available.
+- The stadium and calculator islands are back to their original hand-drawn art; the other islands keep the 3D renders.
+- Calmer glass in the hub: the white sheen and inner glow are about half as strong in the default theme.
+
+## 4.1.0
 - Donate: choose Ko-fi or PayPal; the welcome window shows a calm support block instead of a tiny link.
 - Puzzle for coins: new track puzzle (turn the pieces until one track runs from arrow to arrow); the logic puzzles still show up now and then.
 - Island art redone as real 3D renders (Blender, CC BY models from Poly Pizza): arcade, school, stadium, farm, chess and calculator.

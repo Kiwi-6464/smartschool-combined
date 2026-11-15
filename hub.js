@@ -104,6 +104,84 @@
    * assets/islands/<id>.webp, 720x615 with a transparent background.
    */
 
+  /*
+   * The stadium and the calculator keep their original hand-drawn SVG islands;
+   * the other four use the 3D renders (assets/islands, see CREDITS.md).
+   */
+  function islandSvg(id, top, object) {
+    var g = "hub" + id;
+    return (
+      '<svg viewBox="0 0 240 205" aria-hidden="true"><defs>' +
+      '<linearGradient id="' + g + 't" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + top[0] + '"/><stop offset="1" stop-color="' + top[1] + '"/></linearGradient>' +
+      '<linearGradient id="' + g + 'r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6a52"/><stop offset=".55" stop-color="#5b4334"/><stop offset="1" stop-color="#2e2119"/></linearGradient>' +
+      '<radialGradient id="' + g + 'h" cx=".38" cy=".3" r=".7"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>' +
+      "</defs>" +
+      '<path d="M24 118C30 146 70 160 96 176c12 8 16 22 24 23 8-1 14-15 26-24 26-15 64-29 70-57z" fill="url(#' + g + 'r)"/>' +
+      '<path d="M120 199c8-1 14-15 26-24 26-15 64-29 70-57l-48 24-30 30z" fill="#000" opacity=".22"/>' +
+      '<path d="M24 118c6 28 46 42 72 58l-14-36z" fill="#fff" opacity=".07"/>' +
+      '<path d="M96 176l24 23 18-27-20-20z" fill="#000" opacity=".1"/>' +
+      '<path d="M24 118a96 28 0 0 0 192 0v9a96 28 0 0 1-192 0z" fill="' + top[2] + '"/>' +
+      '<ellipse cx="120" cy="118" rx="96" ry="28" fill="url(#' + g + 't)"/>' +
+      '<ellipse cx="120" cy="118" rx="96" ry="28" fill="url(#' + g + 'h)"/>' +
+      '<path d="M40 128l3 9 4-7M190 130l2 8 4-6M80 140l3 7 3-6" fill="' + top[2] + '"/>' +
+      '<path d="M26 170l9-7 9 4-2 9-10 3z" fill="#6b5241"/><path d="M35 163l9 4-2 9z" fill="#000" opacity=".25"/>' +
+      '<path d="M196 158l7-5 7 3-1 7-8 2z" fill="#6b5241"/>' +
+      object +
+      "</svg>"
+    );
+  }
+
+  var SVG_ART = {
+    stadion: function () {
+      return islandSvg("t", ["#7be08e", "#33a552", "#26803f"],
+        '<defs><linearGradient id="hubtw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e5e7eb"/><stop offset="1" stop-color="#9ca3af"/></linearGradient>' +
+        '<linearGradient id="hubtp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22c55e"/><stop offset=".5" stop-color="#4ade80"/><stop offset="1" stop-color="#16a34a"/></linearGradient>' +
+        '<linearGradient id="hubtl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7c2" stop-opacity=".75"/><stop offset="1" stop-color="#fff7c2" stop-opacity="0"/></linearGradient></defs>' +
+        '<path d="M60 52l-14 52h28zM180 52l-14 52h28z" fill="url(#hubtl)"/>' +
+        '<ellipse cx="120" cy="116" rx="72" ry="14" fill="#000" opacity=".16"/>' +
+        '<path d="M50 96a70 25 0 0 0 140 0v12a70 25 0 0 1-140 0z" fill="#6b7280"/>' +
+        '<ellipse cx="120" cy="96" rx="70" ry="25" fill="url(#hubtw)"/>' +
+        '<ellipse cx="120" cy="96" rx="61" ry="20" fill="none" stroke="#fff" stroke-opacity=".55" stroke-dasharray="3 3"/>' +
+        '<ellipse cx="120" cy="97" rx="50" ry="15" fill="url(#hubtp)"/>' +
+        '<ellipse cx="120" cy="97" rx="40" ry="10.5" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/>' +
+        '<path d="M120 86.5v21" stroke="#fff" stroke-opacity=".85" stroke-width="1.2"/>' +
+        '<ellipse cx="120" cy="97" rx="6" ry="2.6" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="1.1"/>' +
+        '<circle cx="128" cy="99" r="2.2" fill="#fff"/>' +
+        '<path d="M60 104V52M180 104V52" stroke="#4b5563" stroke-width="2.5"/>' +
+        '<rect x="52" y="46" width="16" height="8" rx="2" fill="#374151"/><rect x="172" y="46" width="16" height="8" rx="2" fill="#374151"/>' +
+        '<circle class="hub-lamp" cx="56" cy="50" r="2" fill="#fffbe0"/><circle class="hub-lamp" cx="64" cy="50" r="2" fill="#fffbe0"/>' +
+        '<circle class="hub-lamp" cx="176" cy="50" r="2" fill="#fffbe0"/><circle class="hub-lamp" cx="184" cy="50" r="2" fill="#fffbe0"/>' +
+        '<path d="M96 72l4-12M140 72l-4-12" stroke="#ef4444" stroke-width="2"/><path d="M100 60l8 2-8 3zM136 60l-8 2 8 3z" fill="#ef4444"/>'
+      );
+    },
+    calc: function () {
+      var keys = "";
+      var colors = ["#3b4556", "#3b4556", "#3b4556", "#5b7fa8"];
+      for (var r = 0; r < 5; r++) {
+        for (var c = 0; c < 4; c++) {
+          var fill = r === 0 ? "#7dd3fc" : c === 3 ? colors[3] : colors[c];
+          keys += '<rect x="' + (100 + c * 11) + '" y="' + (70 + r * 8) + '" width="8" height="5" rx="1.6" fill="' + fill + '"/>';
+        }
+      }
+      return islandSvg("c", ["#c7d2e0", "#8fa0b8", "#6b7a92"],
+        '<defs><linearGradient id="hubcb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a4558"/><stop offset="1" stop-color="#121722"/></linearGradient>' +
+        '<linearGradient id="hubcs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7f5e9"/><stop offset="1" stop-color="#9fd8c3"/></linearGradient></defs>' +
+        '<ellipse cx="124" cy="121" rx="38" ry="8" fill="#000" opacity=".2"/>' +
+        '<g transform="rotate(-6 120 70)">' +
+        '<path d="M148 22l8 4v92l-8 2z" fill="#0b0f17"/>' +
+        '<rect x="94" y="18" width="56" height="102" rx="9" fill="url(#hubcb)"/>' +
+        '<rect x="94.5" y="18.5" width="55" height="101" rx="8.5" fill="none" stroke="#fff" stroke-opacity=".14"/>' +
+        '<rect x="100" y="26" width="44" height="32" rx="3" fill="url(#hubcs)"/>' +
+        '<path d="M102 46h40M122 28v28" stroke="#1d4d3f" stroke-opacity=".3" stroke-width=".8"/>' +
+        '<path class="hub-graph" d="M102 50c5 0 6-18 12-18s7 22 13 22 7-14 13-14 3 4 4 4" fill="none" stroke="#0f5132" stroke-width="1.6" stroke-linecap="round"/>' +
+        '<text x="100" y="66" font-size="5" font-weight="800" fill="#cbd5e1" font-family="system-ui, sans-serif">TI-84 Plus CE</text>' +
+        keys +
+        '<circle cx="122" cy="114" r="3" fill="#2a3242"/>' +
+        "</g>"
+      );
+    },
+  };
+
   /* c1 / c2 tint each island from the theme's own palette. */
   var ISLANDS = [
     { id: "arcade", kicker: "Spellen", title: "Arcade", sub: "Zes spellen, één speelhal. Verbreek je records.", c1: "var(--hb-acc)", c2: "var(--hb-red)" },
@@ -498,12 +576,15 @@
 
     var art = h("div", "isl-art");
     var float = h("div", "isl-float");
-    var img = h("img");
-    img.src = chrome.runtime.getURL("assets/islands/" + def.id + ".webp");
-    img.alt = "";
-    img.decoding = "async";
-    img.draggable = false;
-    float.appendChild(img);
+    if (SVG_ART[def.id]) float.innerHTML = SVG_ART[def.id](); // fixed markup from this file
+    else {
+      var img = h("img");
+      img.src = chrome.runtime.getURL("assets/islands/" + def.id + ".webp");
+      img.alt = "";
+      img.decoding = "async";
+      img.draggable = false;
+      float.appendChild(img);
+    }
     art.appendChild(h("div", "isl-shadow"));
     art.appendChild(float);
     tilt.appendChild(art);
@@ -1560,6 +1641,10 @@
     ".isl--calc .isl-art { width: auto; height: 86%; max-width: none; right: 4%; bottom: 6%; } .isl--calc .isl-float, .isl--calc .isl-float img { height: 100%; width: auto; }",
     ".isl-float { position: relative; animation: isl-bob 6.5s ease-in-out infinite; animation-delay: calc(var(--i) * -1.3s); will-change: transform; }",
     ".isl-float img { display: block; width: 100%; height: auto; user-select: none; }",
+    ".isl-float svg { display: block; width: 100%; height: auto; overflow: visible; }",
+    ".isl--stadion .isl-art { width: 64%; max-width: 270px; }",
+    ".isl--calc .isl-float svg { height: 100%; width: auto; }",
+    ".hub-lamp { animation: hub-lamp 3s ease-in-out infinite; } @keyframes hub-lamp { 50% { opacity: .55; } }",
     ".isl-shadow { position: absolute; left: 22%; right: 22%; bottom: -6%; height: 12%; border-radius: 50%;",
     "  background: radial-gradient(closest-side, var(--hb-shade), transparent); animation: isl-shadow 6.5s ease-in-out infinite; animation-delay: calc(var(--i) * -1.3s); }",
     "@keyframes isl-bob { 0%, 100% { transform: translate3d(0, 0, 0) rotate(-.7deg); } 50% { transform: translate3d(0, -12px, 0) rotate(.7deg); } }",
