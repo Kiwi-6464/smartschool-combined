@@ -47,7 +47,7 @@
    * only covers the moment before it does. The id is shown at the bottom of
    * the calculator dropdown ("Jouw gebruikers-ID").
    */
-  var HOST_USER_IDS = [];
+  var HOST_USER_IDS = ["4005_14660_0"];
 
   // Where older versions kept the list on this computer (migrateLocal).
   var STORE_KEY = "sscCalculatorPrograms";

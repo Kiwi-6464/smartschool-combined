@@ -2557,8 +2557,8 @@ html[data-ssc-theme] .ssc-anim .card__container {
 html[data-ssc-theme] .card__container:hover {
   cursor: pointer !important;
   background-color: var(--ssc-base01) !important;
+  /* No scale(): a scaled, composited card re-rasterises its text soft (blurry labels like "Berichten"). */
   transform: translateY(-5px);
-  scale: 1.05;
   box-shadow: 0px 15px 50px var(--ssc-shadow) !important;
 }
 html[data-ssc-theme] .card__container__content__title {
@@ -11978,6 +11978,14 @@ nav.topnav :is([data-ssc-topbar-btn], [data-ssc-hub-btn], [data-ssc-edit-btn]) s
 .smsc-topnav :is([data-ssc-topbar-btn], [data-ssc-hub-btn], [data-ssc-edit-btn]) svg {
   color: var(--ssc-topbar-text, currentColor);
 }
+/* Smartschool paints every topnav svg white (`fill:#fff`), which beats the
+   fill="currentColor" attribute and made pencil/gear/gamepad invisible on the
+   light themes. Re-point only the glyphs that ask for currentColor. */
+/* ssc:ungated — our own buttons, must look right on Geen thema too. */
+nav.topnav :is([data-ssc-topbar-btn], [data-ssc-hub-btn], [data-ssc-edit-btn]) svg[fill="currentColor"],
+.smsc-topnav :is([data-ssc-topbar-btn], [data-ssc-hub-btn], [data-ssc-edit-btn]) svg[fill="currentColor"] {
+  fill: var(--ssc-topbar-text, currentColor) !important;
+}
 
 /* Fallback for "Default (geen thema)", where every --ssc-* is `initial` and
    smpp's own pill declarations above compute to nothing. The var() fallbacks
@@ -12187,3 +12195,34 @@ html[data-ssc-theme] [class*="statistics"] {
   transition: opacity .25s ease, transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .ssc-donate-link:hover { opacity: 1; transform: translateY(-1px); }
 .ssc-donate-link:focus-visible { outline: 2px solid var(--ssc-accent, currentColor); outline-offset: 2px; }
+
+/*
+ * Performance: backdrop blur is the most expensive thing this sheet does (the
+ * browser re-blurs the photo behind every blurred box on every scroll frame),
+ * and many list rows and panels had it switched on permanently. It is now only
+ * on when the user turns on "Glass". The :not(#x) raises the specificity above
+ * every rule above, whatever its selector. Widgets stay readable without the
+ * blur through a more opaque background.
+ */
+html[data-ssc-theme][data-ssc-theme] body:not(.ssc-glass) *:not(#x) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+html[data-ssc-theme][data-ssc-theme-has-bg] body:not(.ssc-glass) .ssc-widget:not(.ssc-widget-transparent) {
+  background: color-mix(in srgb, var(--ssc-base01) 92%, transparent);
+}
+
+/*
+ * Readability scrim: some photos are bright (or dark) in the very places the
+ * page text lands on them. A theme that needs it sets --ssc-scrim (its own
+ * base colour at a low alpha); this fixed layer sits between the photo and
+ * the page. Themes without the variable get a transparent layer.
+ */
+html[data-ssc-theme][data-ssc-theme-has-bg]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--ssc-scrim, transparent);
+}

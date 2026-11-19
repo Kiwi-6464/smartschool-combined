@@ -18,8 +18,11 @@
   if (typeof window.sscGet !== "function") return;
 
   var HOST_ID = "ssc-root";
-  var QUIET_MS = 1500;
-  var MAX_WAIT_MS = 4000;
+  // How long the page must stop changing before the panel is built, and the
+  // cap for pages that never stop. Long waits only delayed the widgets and
+  // the settings, so both are short.
+  var QUIET_MS = 300;
+  var MAX_WAIT_MS = 1200;
 
   var host = null;
   var shadow = null;
@@ -85,7 +88,7 @@
     "  z-index: 2147483000;",
     "  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;",
     "  --ssc-line: color-mix(in srgb, var(--ssc-text, #1a1a2e) 12%, transparent);",
-    "  --ssc-muted: color-mix(in srgb, var(--ssc-text, #1a1a2e) 62%, transparent);",
+    "  --ssc-muted: color-mix(in srgb, var(--ssc-text, #1a1a2e) 80%, transparent);",
     "  --ssc-surface: color-mix(in srgb, var(--ssc-base00, #ffffff) 92%, transparent);",
     "  --ssc-surface-2: color-mix(in srgb, var(--ssc-base01, #f0f2f5) 88%, transparent);",
     "  --ssc-border: var(--ssc-base03, #d1d5db);",
@@ -657,6 +660,20 @@
     "</svg>";
   var DONATE_ATTR = "data-ssc-donate-btn";
   var DONATE_LABEL = "Doneer";
+  /* "Beheer": admin panel button next to Islands, for the owner's Smartschool id only (hub.js checks the id again). */
+  var ADMIN_ATTR = "data-ssc-admin-btn";
+  var ADMIN_IDS = ["4005_14660_0"];
+  var adminKnown = false;
+  var adminAsked = 0; // checks done so far
+  var adminTimer = 0;
+  /* Visible to the owner: by Smartschool id, or by the name Smartschool shows in the top bar (letters only, so "Iwert Dedijn" and "De Dijn Iwert" both match).
+     This only decides whether the button shows; the database rules (/admins) decide whether an edit is allowed. */
+  window.sscIsAdminUi = function (uid) {
+    if (ADMIN_IDS.indexOf(uid) !== -1) return true;
+    var node = document.querySelector(".js-btn-profile .hlp-vert-box span");
+    var name = ((node && (node.getAttribute("data-ssc-orig-name") || node.textContent)) || "").toLowerCase().replace(/[^a-z]/g, "");
+    return name.indexOf("iwert") !== -1 && name.indexOf("dijn") !== -1;
+  };
 
   /*
    * The three right-hand glyphs, copied from smpp.
@@ -860,6 +877,7 @@
     }
 
     mountHubButton(nav, button);
+    mountAdminButton(nav);
     mountDonateButton(nav);
 
     applyTopbarGlyphs();
@@ -900,6 +918,87 @@
     if (!settingsButton || settingsButton.parentNode !== nav) return;
     if (hub.parentNode === nav && settingsButton.nextSibling === hub) return;
     nav.insertBefore(hub, settingsButton.nextSibling);
+  }
+
+  /** "Beheer": text button right after Islands, only when the signed-in id is an admin. Insert-or-repair like the others. */
+  function mountAdminButton(nav) {
+    var btn = document.querySelector("[" + ADMIN_ATTR + "]");
+    // The id is read from the page (#datePickerMenu), which does not exist yet when the bar is first built, so ask again (at most every 1.5 s) until it is known.
+    // A timer, not the page observer: nothing may change on the page after the id shows up, and then no new check would ever run. Gives up after ~2 minutes (a non-admin).
+    if (adminKnown !== true && !adminTimer && adminAsked < 80 && typeof window.sscGetUserId === "function") {
+      adminTimer = setTimeout(function () {
+        adminTimer = 0;
+        adminAsked++;
+        Promise.resolve(window.sscGetUserId()).then(function (uid) {
+          if (window.sscIsAdminUi(uid)) adminKnown = true;
+          mountTopbarButton();
+        }, function () {});
+      }, adminAsked ? 1500 : 0);
+    }
+    if (!adminKnown) { if (btn && btn.parentNode) btn.parentNode.removeChild(btn); return; }
+    var hub = document.querySelector("[" + HUB_ATTR + "]");
+    if (!hub || hub.parentNode !== nav) return;
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "topnav__btn";
+      btn.setAttribute(ADMIN_ATTR, "1");
+      btn.title = "Beheer";
+      btn.textContent = "Beheer";
+    }
+    if (btn.parentNode === nav && hub.nextSibling === btn) return;
+    nav.insertBefore(btn, hub.nextSibling);
+  }
+
+  function openAdmin() {
+    // The id is checked again here (the button may have been shown by the name check); the database rules decide what may be written.
+    Promise.resolve(window.sscGetUserId && window.sscGetUserId()).then(function (uid) {
+      if (!window.sscIsAdminUi || !window.sscIsAdminUi(uid)) return;
+      loadModule("admin").then(function (ok) {
+        if (ok && typeof window.sscAdminOpen === "function") window.sscAdminOpen();
+      });
+    });
+  }
+
+  /*
+   * Messages the owner sends (admin board → Meldingen). Asks the database for messages newer than the last one this
+   * student saw, at most every 3 minutes, and only loads the popup module when there is something to show. A student's
+   * first check starts "from now": older messages are never replayed.
+   */
+  var ANN_EVERY_MS = 3 * 60 * 1000;
+  var annTries = 0;
+
+  function checkAnnouncements() {
+    if (window.top !== window || typeof window.sscGetUserId !== "function") return;
+    Promise.resolve(window.sscGetUserId()).then(function (uid) {
+      if (!uid || uid === "anoniem") {
+        // The id comes from the page (#datePickerMenu), which may not be there yet.
+        if (annTries++ < 8) setTimeout(checkAnnouncements, 4000);
+        return;
+      }
+      var key = "sscAnnounce_" + uid;
+      chrome.storage.local.get([key], function (r) {
+        if (chrome.runtime.lastError) return;
+        var st = (r && r[key]) || {};
+        var now = Date.now();
+        if (!st.since) st.since = now;
+        if (st.checkedAt && now - st.checkedAt < ANN_EVERY_MS - 5000) return;
+        st.checkedAt = now;
+        var save = function () { var o = {}; o[key] = st; chrome.storage.local.set(o); };
+        save();
+        chrome.runtime.sendMessage({ type: "ssc:announceGet", userId: uid, since: Math.max(st.since, st.seen || 0) }, function (res) {
+          if (chrome.runtime.lastError || !res || !res.ok || !res.items || !res.items.length) return;
+          // Tell the owner's board this message arrived.
+          res.items.forEach(function (it) { chrome.runtime.sendMessage({ type: "ssc:announceSeen", id: it.id, userId: uid }, function () { void chrome.runtime.lastError; }); });
+          loadModule("announce").then(function (ok) {
+            if (!ok || typeof window.sscAnnounceShow !== "function") return;
+            window.sscAnnounceShow(res.items, function (createdAt) {
+              if (createdAt > (st.seen || 0)) { st.seen = createdAt; save(); }
+            });
+          });
+        });
+      });
+    });
   }
 
   /**
@@ -1020,6 +1119,12 @@
       openHub();
       return;
     }
+    if (closestWithAttr(e.target, ADMIN_ATTR)) {
+      e.preventDefault();
+      e.stopPropagation();
+      openAdmin();
+      return;
+    }
     if (closestWithAttr(e.target, DONATE_ATTR)) {
       e.preventDefault();
       e.stopPropagation();
@@ -1082,7 +1187,7 @@
 
   /*
    * The class this account has to be in. Matched loosely on purpose: the API
-   * has been seen writing "6A twe", the timetable "6A-TWE" and the URL "6Atwe".
+   * has been seen writing "5D twe", the timetable "5D-TWE" and the URL "5Dtwe".
    * Case, spaces, dashes, dots and underscores are all ignored, but the two
    * parts must be one token — "tweede" alone must never match.
    */
@@ -1390,6 +1495,10 @@
     maybeStartWidgets();
     document.addEventListener("click", maybeStartWidgets, true);
 
+    // Owner messages: shortly after load, then every few minutes while the tab is open.
+    setTimeout(checkAnnouncements, 3000);
+    setInterval(function () { if (!document.hidden) checkAnnouncements(); }, ANN_EVERY_MS);
+
     // Read once so the first calculator click inside the 24h window paints
     // the stored result without a spinner.
     calcCacheGet().then(function (entry) {
@@ -1447,6 +1556,30 @@
   watchTopbar();
   document.addEventListener("keydown", onPanelKey);
   setTimeout(maybeWelcome, 2500);
+
+  /**
+   * Things that do not need a quiet page start right away instead of after the
+   * quiet wait below. The widgets (widget-system.js waits for the start page's
+   * own containers). And Resultaten: the grades fetch already runs from
+   * walkout.js, so the loader and the reveal queue start with it. The panel's
+   * host sits on <html>, so building it this early is safe, and build() does
+   * nothing the second time.
+   */
+  function earlyStart() {
+    maybeStartWidgets();
+    if (!/result/i.test(String(location.href) + String(location.hash))) return;
+    build();
+    window.sscGet().then(function (s) {
+      if (typeof window.sscWalkoutStart !== "function") return;
+      try {
+        window.sscWalkoutStart(s);
+      } catch (e) {
+        console.error("[SSC] walkout failed", e);
+      }
+    });
+  }
+  if (document.readyState !== "loading") earlyStart();
+  else document.addEventListener("DOMContentLoaded", earlyStart, { once: true });
 
   if (document.readyState === "complete" || document.readyState === "interactive") {
     whenQuiet(start);

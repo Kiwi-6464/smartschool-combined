@@ -153,6 +153,7 @@
     "--ssc-homepage-sidebars-bg",
     "--ssc-splashtext",
     "--darken-background",
+    "--ssc-scrim",
   ];
 
   /**
@@ -520,8 +521,11 @@
   }
 
   function showLive(id, settings) {
-    // Performance mode keeps the still and does not decode video at all.
-    live.paused = !!(settings && settings.performanceMode);
+    // Performance mode keeps the still and does not decode video at all. So do
+    // small machines (4 cores or 4 GB or less): decoding a looping video there is
+    // what made the page feel laggy, without anyone having to find the switch.
+    var weak = (navigator.deviceMemory && navigator.deviceMemory <= 4) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+    live.paused = !!((settings && settings.performanceMode) || weak);
     if (live.id === id && live.host && live.host.isConnected) {
       syncPlayback();
       return;

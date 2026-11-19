@@ -361,9 +361,12 @@
   function sscFetchRawGrades() {
     if (rawRaw && Date.now() - rawAt < RAW_TTL_MS) return Promise.resolve(rawRaw);
     if (rawShared) return rawShared;
-    rawShared = askBackground()
+    // Straight from the page first: it is same-origin and carries the session
+    // cookie, and it skips waking the service worker and copying the whole
+    // list through a message. The worker stays as the fallback.
+    rawShared = rawPagesDirect()
       .catch(function () {
-        return rawPagesDirect();
+        return askBackground();
       })
       .then(
         function (raw) {

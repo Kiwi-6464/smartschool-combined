@@ -13,7 +13,6 @@ node_modules/
 graphify-out/
 
 # Media we may not redistribute
-assets/themes/*.jpg
 assets/audio/*.mp3
 assets/cards/
 

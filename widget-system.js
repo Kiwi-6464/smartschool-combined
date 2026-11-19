@@ -424,6 +424,41 @@
     onRemove() {}
   }
 
+  var buildingGrid = false;
+  var deferredFill = [];
+  var fillRunning = false;
+
+  function fillOne(w) {
+    w.element.classList.remove("ssc-widget-pending");
+    w._setPreview(false);
+  }
+
+  /** Fills the waiting cards, the ones on screen first, one per idle slot so no single task blocks for long. */
+  function drainDeferred() {
+    if (fillRunning) return;
+    fillRunning = true;
+    var vh = window.innerHeight || 800;
+    deferredFill.sort(function (a, b) {
+      var ta = a.element.getBoundingClientRect().top < vh ? 0 : 1, tb = b.element.getBoundingClientRect().top < vh ? 0 : 1;
+      return ta - tb;
+    });
+    var later = window.requestIdleCallback ? function (fn) { window.requestIdleCallback(fn, { timeout: 250 }); } : function (fn) { setTimeout(fn, 16); };
+    (function next() {
+      var w = deferredFill.shift();
+      if (!w) { fillRunning = false; return; }
+      if (w.element.isConnected && !w._content) fillOne(w);
+      later(next);
+    })();
+  }
+
+  /** Edit mode and dragging need real content everywhere: finish the queue at once. */
+  function flushDeferred() {
+    while (deferredFill.length) {
+      var w = deferredFill.shift();
+      if (w.element.isConnected && !w._content) fillOne(w);
+    }
+  }
+
   /* One of our widgets, rendered by widgets.js. */
   class SscWidget extends WidgetBase {
     constructor(def) {
@@ -440,6 +475,14 @@
       var r = window.sscWidgetKit.render(this.def.id);
       r.node.__sscDispose = r.dispose;
       return r.node;
+    }
+    /* On the first build our heavy cards are filled in one by one (see deferFill), so the page shows at once. */
+    addToGrid(target) {
+      if (!buildingGrid) return super.addToGrid(target);
+      this.element.dataset.widgetName = this.name;
+      this.element.classList.add("ssc-widget-pending");
+      target.appendChild(this.element);
+      deferredFill.push(this);
     }
     onContentDropped(node) {
       if (node && typeof node.__sscDispose === "function") node.__sscDispose();
@@ -655,6 +698,7 @@
       grid = document.createElement("div");
       grid.id = GRID_ID;
       grid.className = "ssc-widget-grid";
+      buildingGrid = true;
       columns.forEach(function (names) {
         var col = makeColumn();
         names.forEach(function (name) {
@@ -667,6 +711,7 @@
       });
       if (!columns.length) grid.appendChild(makeColumn());
 
+      buildingGrid = false;
       container.textContent = "";
       container.appendChild(grid);
       // A stored layout with another column count follows the setting.
@@ -679,6 +724,7 @@
       }
 
       widgetSystemCreated = true;
+      drainDeferred();
       return true;
     });
   }
@@ -810,10 +856,44 @@
     });
   }
 
+  /* ---------- first-time tip ---------- */
+
+  var TIP_KEY = "sscWidgetTipSeen";
+
+  function showWidgetTip() {
+    try {
+      if (localStorage.getItem(TIP_KEY)) return;
+    } catch (e) {
+      /* No storage: show it again next time rather than never. */
+    }
+    if (document.querySelector(".ssc-widget-tip")) return;
+    var tip = document.createElement("div");
+    tip.className = "ssc-widget-tip";
+    tip.style.fontFamily = getComputedStyle(document.body).fontFamily;
+    tip.innerHTML =
+      '<div class="ssc-widget-tip-title">Widgets bewerken</div>' +
+      '<p><b>Verwijderen:</b> sleep een widget naar het vak met het pijltje bovenaan.</p>' +
+      '<p><b>Toevoegen:</b> klik op dat pijltje om je widgetlijst te openen en sleep een widget naar je startscherm.</p>';
+    var ok = document.createElement("button");
+    ok.type = "button";
+    ok.textContent = "Begrepen";
+    ok.addEventListener("click", function () {
+      try {
+        localStorage.setItem(TIP_KEY, "1");
+      } catch (e) {
+        /* ignore */
+      }
+      tip.remove();
+    });
+    tip.appendChild(ok);
+    document.documentElement.appendChild(tip);
+  }
+
   /* ---------- edit mode ---------- */
 
   function setEditMode(value) {
     if (!widgetSystemCreated) return Promise.resolve();
+    if (value) flushDeferred();
     if (value && !widgetEditModeInit) initWidgetEditMode();
     if (value && typeof window.sscCloseSurfaces === "function") window.sscCloseSurfaces();
 
@@ -826,6 +906,7 @@
         widgetBag = createWidgetBag();
         widgetBagHandle = widgetBag.querySelector(".ssc-widget-bag-handle");
       }
+      showWidgetTip();
     } else {
       if (curDragInfo) pending = curDragInfo.widget.drop(true);
       closeBag();
@@ -978,6 +1059,7 @@
     "}",
 
     /* Card */
+    ".ssc-widget-pending { min-height: 150px; opacity: .6; }",
     ".ssc-widget {",
     "  height: min-content; transform: scale(1) rotate(0deg); position: relative;",
     "  transition: transform 0.35s cubic-bezier(.2, .8, .2, 1), box-shadow 0.35s, padding 0.25s;",
@@ -1084,6 +1166,18 @@
     ".ssc-widgets-done-button:hover { border-color: " + BASE03 + "; background-color: " + BASE02 + "; }",
     /* smpp keeps it in the layout at opacity 0; it must not catch clicks there. */
     ".ssc-widgets-done-button.ssc-hidden { opacity: 0; pointer-events: none; }",
+    /* First-time tip */
+    ".ssc-widget-tip {",
+    "  position: fixed; left: 50%; top: 22%; transform: translateX(-50%); z-index: 10000001; width: min(660px, 90vw);",
+    "  box-sizing: border-box; padding: 1.4rem 1.6rem; border-radius: 1.4rem; background-color: " + BASE01 + "; color: " + TEXT + ";",
+    "  border: 3px solid " + ACCENT + "; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.7); font-size: 1.4rem; line-height: 1.45;",
+    "}",
+    ".ssc-widget-tip-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.6rem; }",
+    ".ssc-widget-tip p { margin: 0.4rem 0; }",
+    ".ssc-widget-tip button {",
+    "  margin-top: 0.9rem; font: inherit; font-weight: 700; cursor: pointer; padding: 0.5rem 1.4rem; border-radius: 100000px;",
+    "  border: 3px solid " + ACCENT + "; background-color: " + BASE02 + "; color: " + TEXT + ";",
+    "}",
     ".ssc-widgets-done-button > svg { width: 1.7rem; overflow: visible; margin: 0; fill: " + TEXT + "; }",
     ".ssc-widgets-done-button:hover > svg { fill: " + GREEN + "; }",
 

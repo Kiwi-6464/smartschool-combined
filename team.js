@@ -1683,7 +1683,6 @@
     var tier = tierOf(basis);
     var card = h("div", "ssc-mc tier-" + (tier.id || "bronze"));
     var art = cardModule();
-    if (art && art.silhouette) card.appendChild(art.silhouette("ssc-mc-sil"));
     card.appendChild(h("div", "ssc-mc-holo"));
     if (art && art.trackHolo) art.trackHolo(card);
     var top = h("div", "ssc-mc-top");
@@ -2234,7 +2233,7 @@
   /* ---------- online league: joining (Phase 1) ---------- */
 
   /**
-   * The student's class, as Smartschool names it ("6A-TWE"): every grade
+   * The student's class, as Smartschool names it ("5D-TWE"): every grade
    * carries period.class.name (settings.js keeps it as `klas`). The most
    * frequent one wins, so a stray grade from another class cannot move you.
    */

@@ -41,6 +41,21 @@ window.FARM_DATA = (function () {
     d_barrel: deco("Ton", "barrel", 160, 3), d_sign: deco("Wegwijzer", "signpost", 160, 3), d_lantern: deco("Lantaarn", "lantern", 300, 4), d_bench: deco("Bankje", "bench", 400, 4, 2),
     d_chest: deco("Schatkist", "chest", 500, 5), d_well: deco("Waterput", "well", 800, 5, 2), d_stall: deco("Marktkraam", "stall_red", 1000, 6, 2), d_fountain: deco("Fontein", "fountain", 1600, 7, 2),
   };
+  // Pen upgrades (4.11): a bigger footprint and sprite and room for more animals, up to 20. Each tier is a hidden type built from its base pen
+  // (same sprite and rules), so everything that reads T[o.t] keeps working; the game swaps o.t in place. Costs are a first balance guess.
+  const PEN_UP = {
+    coop: [{ n: "Grote kippenstal", w: 4, d: 4, sc: 1.3, cap: 10, cost: 1500 }, { n: "Massieve kippenstal", w: 5, d: 5, sc: 1.6, cap: 20, cost: 4000 }],
+    cowpen: [{ n: "Grote koeienweide", w: 5, d: 4, sc: 1.25, cap: 10, cost: 4000 }, { n: "Massieve koeienweide", w: 6, d: 5, sc: 1.5, cap: 20, cost: 10000 }],
+    pigpen: [{ n: "Grote varkensstal", w: 4, d: 4, sc: 1.3, cap: 10, cost: 8000 }, { n: "Massieve varkensstal", w: 5, d: 5, sc: 1.6, cap: 20, cost: 20000 }],
+  };
+  for (const base in PEN_UP) {
+    let prev = base;
+    PEN_UP[base].forEach((u, i) => {
+      const k = base + (i + 2), b = types[base];
+      types[k] = { n: u.n, spr: b.spr, w: u.w, d: u.d, sc: u.sc, cost: 0, lvl: b.lvl, cat: "up", kind: "pen", base, pen: Object.assign({}, b.pen, { cap: u.cap }) };
+      types[prev].next = k; types[prev].upCost = u.cost; prev = k;
+    });
+  }
   const R = (out, inp, t, lvl, n) => ({ out, in: inp, t, lvl: lvl || 1, n: n || 1 });
   const recipes = {
     feedmill: [R("feed_chick", { wheat: 2 }, 60, 1, 3), R("feed_cow", { corn: 2, carrot: 1 }, 180, 3, 3), R("feed_pig", { carrot: 2, turnip: 1 }, 300, 5, 3)],

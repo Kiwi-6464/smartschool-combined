@@ -1955,9 +1955,14 @@
 
   /* ---------- dispatch ---------- */
 
+  /* "guess" and "random" are not reveals of their own: they pick or precede one of the real styles. */
+  var META_STYLES = { guess: true, random: true };
+  var REAL_STYLES = ["reel", "tunnel", "flip", "scratch", "slot", "roulette", "pack"];
+  var lastRandom = "";
+
   function rememberStyle(settings) {
     if (!settings) return;
-    if (OWN_STYLES[settings.cutsceneStyle]) stylePref = settings.cutsceneStyle;
+    if (OWN_STYLES[settings.cutsceneStyle] || META_STYLES[settings.cutsceneStyle]) stylePref = settings.cutsceneStyle;
     else if (stylePref !== "reel") stylePref = "reel";
   }
 
@@ -1966,12 +1971,129 @@
     if (typeof window.sscOnChange === "function") window.sscOnChange(rememberStyle);
   }
 
+  /** Runs one real style, whatever the user's saved preference is. */
+  function runStyle(name, options) {
+    if (OWN_STYLES[name]) { play(name, options); return; }
+    if (name === "tunnel" && typeof window.sscPlayCutsceneTunnel === "function") {
+      if (typeof window.sscCloseSurfaces === "function") window.sscCloseSurfaces();
+      window.sscPlayCutsceneTunnel(options);
+      return;
+    }
+    original(options); // the reel (cutscene.js plays the reel unless its own saved preference is "tunnel")
+  }
+
+  /** A different style than the last time. */
+  function pickRandomStyle() {
+    var pool = REAL_STYLES.filter(function (s) { return s !== lastRandom && (s !== "tunnel" || typeof window.sscPlayCutsceneTunnel === "function"); });
+    lastRandom = pool[Math.floor(Math.random() * pool.length)] || "reel";
+    return lastRandom;
+  }
+
+  /*
+   * Guess the grade: before the reveal the student sees the test and its maximum, picks a score,
+   * and the closer the guess, the more coins. The real score is never put in the dialog.
+   * Payout: share of the maximum between the guess and the real score. Exact = 500, then
+   * within 2% = 250, 5% = 120, 10% = 60, 20% = 20, else nothing.
+   */
+  var GUESS_PAYOUT = [[0, 500], [0.02, 250], [0.05, 120], [0.1, 60], [0.2, 20]];
+  function guessReward(guess, score, max) {
+    var diff = Math.abs(guess - score) / max;
+    for (var i = 0; i < GUESS_PAYOUT.length; i++) if (diff <= GUESS_PAYOUT[i][0] + 1e-9) return GUESS_PAYOUT[i][1];
+    return 0;
+  }
+
+  function giveCoins(n) {
+    if (!(n > 0) || typeof window.sscLoadModule !== "function") return;
+    window.sscLoadModule("hub").then(function () {
+      if (window.sscHubEconomy) window.sscHubEconomy.ready().then(function () { window.sscHubEconomy.give(n); });
+    }, function () {});
+  }
+
+  /** Our overlays live in a shadow root: the theme stylesheet forces colours/backgrounds on plain divs and made them unreadable. */
+  function isolate(node, tag) {
+    var host = document.createElement("div");
+    host.setAttribute("data-ssc-guess", tag);
+    host.style.cssText = "all:initial";
+    host.attachShadow({ mode: "open" }).appendChild(node);
+    document.documentElement.appendChild(host);
+    return host;
+  }
+
+  /** Glassy, high-contrast result popup. Goes away by itself (timer + animation), on click, and when the reveal closes. */
+  var activeToast = null;
+  function dismissToast() { if (activeToast) { activeToast.remove(); activeToast = null; } }
+  function toast(line, big, won) {
+    dismissToast();
+    var t = document.createElement("div");
+    t.style.cssText = "position:fixed;left:50%;top:4vh;transform:translateX(-50%);z-index:2147483600;cursor:pointer;background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(12,12,20,.58);-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);color:#fff;border:1px solid " + (won ? "rgba(255,210,74,.75)" : "rgba(255,255,255,.35)") + ";border-radius:18px;padding:16px 30px;text-align:center;font-family:system-ui,sans-serif;box-shadow:0 12px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.35);text-shadow:0 1px 3px rgba(0,0,0,.65);max-width:90vw";
+    var a = document.createElement("div"); a.style.cssText = "font:600 17px system-ui,sans-serif;color:#e8e8ee"; a.textContent = line;
+    var b = document.createElement("div"); b.style.cssText = "font:800 30px system-ui,sans-serif;margin-top:4px;color:" + (won ? "#ffd24a" : "#fff"); b.textContent = big;
+    t.appendChild(a); t.appendChild(b);
+    t.addEventListener("click", dismissToast);
+    var host = isolate(t, "toast");
+    activeToast = host;
+    var gone = function () { if (activeToast === host) dismissToast(); else host.remove(); };
+    setTimeout(gone, 4500);
+    if (t.animate) { var an = t.animate([{ opacity: 1 }, { opacity: 1, offset: 0.9 }, { opacity: 0 }], { duration: 4500, fill: "forwards" }); an.onfinish = gone; }
+  }
+
+  function askGuess(options, go) {
+    var max = Number(options.max), score = Number(options.score);
+    if (!(max > 0) || !isFinite(score)) { go(null); return; }
+    var wrap = document.createElement("div");
+    wrap.style.cssText = "position:fixed;inset:0;z-index:2147483500;background:radial-gradient(ellipse at 50% 35%,#1b1b25,#07070a 75%);display:grid;place-items:center;font-family:system-ui,sans-serif";
+    var card = document.createElement("div");
+    card.style.cssText = "width:min(520px,90vw);background:#0f0f14;color:#fff;text-shadow:none;border:1px solid rgba(255,255,255,.35);border-radius:18px;padding:26px;text-align:center";
+    var h = document.createElement("div"); h.style.cssText = "font-size:15px;font-weight:700;letter-spacing:.14em;color:#ffd24a"; h.textContent = "RAAD JE PUNTEN";
+    var t = document.createElement("div"); t.style.cssText = "font-size:26px;font-weight:800;color:#fff;margin:8px 0 6px"; t.textContent = (options.titel || "Toets") + (options.vak ? " (" + options.vak + ")" : "");
+    var m = document.createElement("div"); m.style.cssText = "color:#f0f0f6;font-size:17px;line-height:1.4;margin-bottom:18px"; m.textContent = "Maximum: " + max + " punten. Hoe dichter je zit, hoe meer munten.";
+    var val = document.createElement("div"); val.style.cssText = "font-size:46px;font-weight:800;color:#fff;margin:6px 0";
+    var sl = document.createElement("input"); sl.type = "range"; sl.min = "0"; sl.max = String(max); sl.step = max > 40 ? "1" : "0.5"; sl.value = String(Math.round(max * 0.6 * 2) / 2); sl.style.cssText = "width:100%";
+    var show = function () { val.textContent = sl.value + " / " + max; };
+    sl.addEventListener("input", show); show();
+    var row = document.createElement("div"); row.style.cssText = "display:flex;gap:10px;justify-content:center;margin-top:20px";
+    var mk = function (label, primary, fn) { var b = document.createElement("button"); b.type = "button"; b.textContent = label; b.style.cssText = "padding:10px 20px;border-radius:12px;border:1px solid rgba(255,255,255,.3);font:700 17px system-ui,sans-serif;text-shadow:none;filter:none;cursor:pointer;color:#fff;background:" + (primary ? "#1f6fcf" : "#34343c"); b.addEventListener("click", fn); return b; };
+    var done = false;
+    var finish = function (guess) { if (done) return; done = true; wrap.dispatchEvent(new Event("remove-host")); go(guess); };
+    row.appendChild(mk("Gok vastleggen", true, function () { finish(Number(sl.value)); }));
+    row.appendChild(mk("Overslaan", false, function () { finish(null); }));
+    [h, t, m, val, sl, row].forEach(function (n) { card.appendChild(n); });
+    wrap.appendChild(card);
+    var host = isolate(wrap, "ask");
+    wrap.addEventListener("remove-host", function () { host.remove(); });
+  }
+
+  /** Runs the reveal and, when a guess was made, settles it once the reveal ends. */
+  function playGuess(options) {
+    askGuess(options, function (guess) {
+      var opts = Object.assign({}, options);
+      if (guess !== null) {
+        var settled = false;
+        var settle = function () {
+          if (settled) return; settled = true;
+          var score = Number(options.score), max = Number(options.max), coins = guessReward(guess, score, max);
+          toast("Je gok: " + guess + "  ·  Het cijfer: " + score, coins > 0 ? "+" + coins + " munten!" : "Geen munten dit keer", coins > 0);
+          giveCoins(coins);
+        };
+        ["onClose", "onComplete"].forEach(function (k) {
+          var prev = options[k];
+          opts[k] = function () { var had = settled; settle(); if (k === "onClose" && had) dismissToast(); if (typeof prev === "function") return prev.apply(this, arguments); };
+        });
+      }
+      runStyle(typeof window.sscPlayCutsceneTunnel === "function" ? "tunnel" : "reel", opts);
+    });
+  }
+
   /**
-   * Same option object and callbacks as cutscene.js. Only the five styles this
-   * file owns are intercepted; reel and tunnel go to the original untouched.
+   * Same option object and callbacks as cutscene.js. The five styles this file owns are
+   * intercepted, plus "random" (a different style every time) and "guess" (guess first, then
+   * the walkout); reel and tunnel go to the original untouched.
    */
   window.sscPlayCutscene = function (options) {
-    if (OWN_STYLES[stylePref]) play(stylePref, options || {});
+    var opts = options || {};
+    if (stylePref === "guess") playGuess(opts);
+    else if (stylePref === "random") runStyle(pickRandomStyle(), opts);
+    else if (OWN_STYLES[stylePref]) play(stylePref, opts);
     else original(options);
   };
 

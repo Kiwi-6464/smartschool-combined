@@ -2427,7 +2427,7 @@
   var KIT_CSS = [
     ".ssc-wg-card {",
     "  --ssc-line: color-mix(in srgb, var(--ssc-text, #1a1a2e) 14%, transparent);",
-    "  --ssc-muted: color-mix(in srgb, var(--ssc-text, #1a1a2e) 62%, transparent);",
+    "  --ssc-muted: color-mix(in srgb, var(--ssc-text, #1a1a2e) 80%, transparent);",
     "  --ssc-accent-ink: var(--ssc-accent, #2b6cb0);",
     "  --ssc-accent-soft: color-mix(in srgb, var(--ssc-accent, #2b6cb0) 14%, transparent);",
     "  color: var(--ssc-text, #1a1a2e); font-size: 13px; line-height: 1.5;",
@@ -2450,7 +2450,7 @@
     ".ssc-wg-card .ssc-wg-holiday-party .ssc-wicon { width: 38px; height: 38px; }",
     ".ssc-wg-card .ssc-wg-title { flex: 1; min-width: 0; font-size: 13px; font-weight: 700;",
     "  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }",
-    ".ssc-wg-card .ssc-wg-error { color: var(--ssc-red, #c0392b); font-size: 12px; font-weight: 600; }",
+    ".ssc-wg-card .ssc-wg-error { color: color-mix(in srgb, var(--ssc-red, #c0392b) 55%, var(--ssc-text, #000) 45%); font-size: 13px; font-weight: 700; }",
     /* Taken */
     ".ssc-wg-card .ssc-wg-tasks { display: flex; flex-direction: column; gap: 8px; }",
     ".ssc-wg-card .ssc-wg-task { display: flex; gap: 10px; align-items: flex-start; min-width: 0; }",

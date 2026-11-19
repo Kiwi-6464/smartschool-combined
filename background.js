@@ -579,7 +579,7 @@ var STATE_KINDS = {
 STATE_KINDS.economy = {
   node: "economies",
   required: "updatedAt",
-  numbers: ["coins", "peak", "barn", "toys", "fert", "updatedAt"],
+  numbers: ["coins", "peak", "barn", "toys", "fert", "updatedAt", "adminSetAt"],
   strings: {},
 };
 // The farm game: one JSON string per user (the game keeps its own shape, the string is capped).
@@ -641,6 +641,114 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   return true;
 });
 
+/*
+ * Admin: correct one match score of a league weekend. The database rules only let an admin uid
+ * (/admins/{uid}) change an existing weekend, so this is refused for everybody else.
+ */
+chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+  if (!msg || msg.type !== "ssc:adminSetMatch") return;
+  var className = typeof msg.className === "string" ? msg.className.trim() : "";
+  var s1 = Number(msg.score1), s2 = Number(msg.score2);
+  var okScores = s1 >= 0 && s2 >= 0 && s1 % 1 === 0 && s2 % 1 === 0 && s1 + s2 <= 11;
+  if (!validClassName(className) || !self.sscLeague.classAllowed(className) || !/^\d{4}-W\d{2}$/.test(msg.weekId || "") || !/^m\d{1,3}$/.test(msg.key || "") || !okScores) {
+    sendResponse({ ok: false, error: "bad_request" });
+    return;
+  }
+  var base = ["leagues", className, "matches", msg.weekId, "matches", msg.key];
+  rtdbRequest("GET", base).then(function (cur) {
+    if (!cur.ok || !cur.data || typeof cur.data !== "object") return { ok: false, error: "missing" };
+    return rtdbRequest("PUT", base.concat("score1"), s1).then(function (a) {
+      if (!a.ok) return { ok: false, error: "http", status: a.status };
+      return rtdbRequest("PUT", base.concat("score2"), s2).then(function (b) {
+        return b.ok ? { ok: true } : { ok: false, error: "http", status: b.status };
+      });
+    });
+  }).then(sendResponse, function () {
+    sendResponse({ ok: false, error: "network" });
+  });
+  return true;
+});
+
+/* ---------- announcements: popups the owner sends to everyone or to chosen students ----------
+ * Database: announcements/{pushId} = { title, body, createdAt, toAll, toIds: { userId: true } }.
+ * The rules only let an admin uid (/admins/{uid}) write; any signed-in client may read. The client asks for the ones
+ * it has not seen (announceGet, filtered here for the asking student); the admin board lists, sends and withdraws.
+ */
+function annItems(data) {
+  var out = [];
+  Object.keys(data || {}).forEach(function (id) {
+    var v = data[id];
+    if (!v || typeof v !== "object" || typeof v.title !== "string" || typeof v.body !== "string") return;
+    out.push({ id: id, title: v.title.slice(0, 80), body: v.body.slice(0, 600), createdAt: Number(v.createdAt) || 0, toAll: v.toAll === true, toIds: Object.keys(v.toIds || {}), seen: v.seen && typeof v.seen === "object" ? v.seen : {} });
+  });
+  return out.sort(function (a, b) { return a.createdAt - b.createdAt; });
+}
+
+chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+  if (!msg || (msg.type !== "ssc:announceGet" && msg.type !== "ssc:announceList")) return;
+  var userId = typeof msg.userId === "string" ? msg.userId.trim() : "";
+  if (msg.type === "ssc:announceGet" && !STATE_USER_RX.test(userId)) {
+    sendResponse({ ok: false, error: "bad_request" });
+    return;
+  }
+  var since = Number(msg.since) || 0;
+  rtdbRequest("GET", ["announcements"]).then(function (res) {
+    if (!res.ok) return { ok: false, error: "http", status: res.status };
+    var all = annItems(res.data);
+    if (msg.type === "ssc:announceList") return { ok: true, items: all.slice(-50).reverse() };
+    var mine = all.filter(function (it) {
+      return it.createdAt > since && (it.toAll || it.toIds.indexOf(userId) !== -1);
+    }).slice(0, 5).map(function (it) { return { id: it.id, title: it.title, body: it.body, createdAt: it.createdAt }; });
+    return { ok: true, items: mine };
+  }).then(sendResponse, function () {
+    sendResponse({ ok: false, error: "network" });
+  });
+  return true;
+});
+
+/* Delivery receipt: this student's extension got the message (announcements/{id}/seen/{userId} = time). */
+chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+  if (!msg || msg.type !== "ssc:announceSeen") return;
+  if (typeof msg.id !== "string" || !/^[-A-Za-z0-9_]{1,40}$/.test(msg.id) || typeof msg.userId !== "string" || !STATE_USER_RX.test(msg.userId)) {
+    sendResponse({ ok: false, error: "bad_request" });
+    return;
+  }
+  rtdbRequest("PUT", ["announcements", msg.id, "seen", msg.userId], Date.now()).then(function (res) {
+    return res.ok ? { ok: true } : { ok: false, error: "http", status: res.status };
+  }).then(sendResponse, function () { sendResponse({ ok: false, error: "network" }); });
+  return true;
+});
+
+chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+  if (!msg || (msg.type !== "ssc:announceSend" && msg.type !== "ssc:announceDelete")) return;
+  if (msg.type === "ssc:announceDelete") {
+    if (typeof msg.id !== "string" || !/^[-A-Za-z0-9_]{1,40}$/.test(msg.id)) {
+      sendResponse({ ok: false, error: "bad_request" });
+      return;
+    }
+    rtdbRequest("DELETE", ["announcements", msg.id]).then(function (res) {
+      return res.ok ? { ok: true } : { ok: false, error: "http", status: res.status };
+    }).then(sendResponse, function () { sendResponse({ ok: false, error: "network" }); });
+    return true;
+  }
+  var title = typeof msg.title === "string" ? msg.title.trim() : "";
+  var text = typeof msg.body === "string" ? msg.body.trim() : "";
+  var ids = Array.isArray(msg.toIds) ? msg.toIds : [];
+  var idsOk = ids.length <= 300 && ids.every(function (i) { return typeof i === "string" && STATE_USER_RX.test(i); });
+  if (!title || title.length > 80 || !text || text.length > 600 || typeof msg.toAll !== "boolean" || !idsOk || (!msg.toAll && !ids.length)) {
+    sendResponse({ ok: false, error: "bad_request" });
+    return;
+  }
+  var toIds = {};
+  ids.forEach(function (i) { toIds[i] = true; });
+  var payload = { title: title, body: text, createdAt: Date.now(), toAll: msg.toAll };
+  if (!msg.toAll) payload.toIds = toIds;
+  rtdbRequest("POST", ["announcements"], payload).then(function (res) {
+    return res.ok ? { ok: true } : { ok: false, error: "http", status: res.status };
+  }).then(sendResponse, function () { sendResponse({ ok: false, error: "network" }); });
+  return true;
+});
+
 /* ---------- on-demand modules (lazy.js) ---------- */
 
 /**
@@ -648,7 +756,7 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
  * same isolated world as the manifest's content scripts. Only these files;
  * anything else in the message is refused.
  */
-var INJECTABLE = ["league.js", "team.js", "ti84.js", "widget-games.js", "widget-3d.js", "widgets.js", "widget-system.js", "hub-games.js", "hub.js", "farm/assets/atlas.js", "farm/assets/masks.js", "farm/data.js", "farm/css.js", "farm/game.js", "hub-farm.js", "chess-engine.js", "chess-bot.js", "hub-chess.js", "welcome.js"];
+var INJECTABLE = ["league.js", "team.js", "ti84.js", "widget-games.js", "widget-3d.js", "widgets.js", "widget-system.js", "hub-games.js", "hub-geometry.js", "hub-poker.js", "hub.js", "farm/assets/atlas.js", "farm/assets/masks.js", "farm/data.js", "farm/css.js", "farm/game.js", "hub-farm.js", "chess-engine.js", "chess-bot.js", "hub-chess.js", "welcome.js", "admin.js", "announce.js"];
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
   if (!msg || msg.type !== "ssc:inject") return;

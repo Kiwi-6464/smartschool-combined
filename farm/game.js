@@ -21,7 +21,7 @@
     '<div class="fg-coins"><span class="fg-coin"></span><b></b><button class="fg-plus" title="Arcade (demo)">+</button></div>' +
     '<div class="fg-btns"><button class="fg-btn big" data-a="shop">Winkel</button><button class="fg-btn big alt" data-a="orders">Bestellingen</button>' +
     '<button class="fg-btn round" data-a="help" title="Gids: wat doet wat?">?</button><button class="fg-btn round" data-a="home" title="Naar de boerderij">⌂</button><button class="fg-btn round" data-a="mute" title="Geluid">♪</button></div>' +
-    '<div class="fg-place"><span></span><button class="fg-btn round no" data-p="cancel">✕</button><button class="fg-btn round" data-p="flip">⇄</button><button class="fg-btn round no" data-p="bin">🗑</button><button class="fg-btn round ok" data-p="ok">✓</button></div>' +
+    '<div class="fg-place"><span></span><button class="fg-btn round no" data-p="cancel">✕</button><button class="fg-btn round" data-p="flip">⇄</button><button class="fg-btn round" data-p="rot" title="Draaien">⟳</button><button class="fg-btn round no" data-p="bin">🗑</button><button class="fg-btn round ok" data-p="ok">✓</button></div>' +
     '<div class="fg-quest"><span></span><button>Overslaan</button></div><div class="fg-pop"></div><div class="fg-drag"></div><div class="fg-toast"></div>' +
     '<div class="fg-modal"><div class="fg-panel"><header><h2></h2><button class="fg-x">✕</button></header><div class="fg-body"></div></div></div>' +
     '<div class="fg-load">Boerderij laden…</div>';
@@ -33,7 +33,9 @@
   const coin = (n) => `<span class="fg-price"><span class="fg-coin"></span>${n}</span>`;
   const fmt = (s) => { s = Math.max(0, Math.ceil(s)); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), x = s % 60; return h ? `${h}u ${m}m` : m ? `${m}:${String(x).padStart(2, "0")}` : `${x}s`; };
   const w2p = (x, y) => [(x - y) * TW / 2, (x + y) * TH / 2];
-  const center = (o) => [o.x + T[o.t].w / 2, o.y + T[o.t].d / 2];
+  // Footprint of an object or placement ({t, r}): a rotated building (o.r) has width and depth swapped. Rotating also mirrors the sprite (o.f), which is what a quarter turn looks like in this single isometric view.
+  const ty = (o) => { const t = T[o.t]; return !o.r || t.w === t.d ? t : t._r || (t._r = Object.assign({}, t, { w: t.d, d: t.w })); };
+  const center = (o) => [o.x + ty(o).w / 2, o.y + ty(o).d / 2];
   const rnd = (a, b) => a + Math.random() * (b - a);
   function mulberry(a) { return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -91,7 +93,7 @@
   const occAt = (x, y) => (inMap(x, y) ? byId.get(occ[x + y * N]) : undefined);
   function rebuild() {
     owned.fill(0); S.plots.forEach((p) => (owned[p] = 1)); occ.fill(0); byId.clear();
-    for (const o of S.objs) { byId.set(o.id, o); const t = T[o.t]; for (let i = 0; i < t.w; i++) for (let j = 0; j < t.d; j++) if (inMap(o.x + i, o.y + j)) occ[o.x + i + (o.y + j) * N] = o.id; }
+    for (const o of S.objs) { byId.set(o.id, o); const t = ty(o); for (let i = 0; i < t.w; i++) for (let j = 0; j < t.d; j++) if (inMap(o.x + i, o.y + j)) occ[o.x + i + (o.y + j) * N] = o.id; }
     for (let p = 0; p < NP * NP; p++) {
       if (owned[p]) { delete wild[p]; continue; }
       if (wild[p]) continue;
@@ -100,7 +102,7 @@
     }
   }
   const forSale = (p) => { if (owned[p]) return false; const x = p % NP, y = Math.floor(p / NP); return (x > 0 && owned[p - 1]) || (x < NP - 1 && owned[p + 1]) || (y > 0 && owned[p - NP]) || (y < NP - 1 && owned[p + NP]); };
-  const count = (t) => S.objs.reduce((n, o) => n + (o.t === t), 0);
+  const count = (t) => S.objs.reduce((n, o) => n + ((T[o.t].base || o.t) === t), 0); // upgraded pens still count as their base type
   const stored = (store) => Object.keys(S.inv).reduce((n, k) => n + (IT[k] && IT[k].s === store ? S.inv[k] : 0), 0);
   const have = (item) => S.inv[item] || 0;
   const ripe = (o) => o.crop && now() - o.at >= D.crops[o.crop].t * 1000;
@@ -149,8 +151,14 @@
   function newOrder() {
     const av = available(), need = {}, k = 1 + Math.floor(Math.random() * Math.min(3, 1 + S.lvl / 2)); let xp = 4;
     for (let i = 0; i < k && av.length; i++) { const a = av.splice(Math.floor(Math.random() * av.length), 1)[0], q = Math.round(rnd(a[1], a[2])); need[a[0]] = q; xp += IT[a[0]].xp * q * 3; }
-    return { id: S.oid++, need, xp, who: D.names[Math.floor(Math.random() * D.names.length)] };
+    return { id: S.oid++, need, xp, who: orderer() };
   }
+  // The student's own teachers (opt.teachers, names as Smartschool gives them; gender is unknown, so a neutral title). Falls back to the old villagers.
+  function orderer() {
+    const t = Array.isArray(opt.teachers) ? opt.teachers.filter((n) => typeof n === "string" && n.trim()) : [];
+    return t.length ? "Leerkracht " + t[Math.floor(Math.random() * t.length)].trim() : D.names[Math.floor(Math.random() * D.names.length)];
+  }
+  const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function tickOrders() { for (let i = 0; i < 5; i++) { const o = S.orders[i]; if (!o || (o.wait && o.wait <= now())) { S.orders[i] = newOrder(); touch(); } } }
 
   // ---------- camera + canvas
@@ -184,13 +192,13 @@
       const st = stage(o); // ripe crops stand taller and sway so they are easy to spot
       return [["soil", c[0], c[1], 1], ["crop_" + o.crop + "_" + st, c[0], c[1], k * (st === 3 ? 1.14 + 0.05 * Math.sin(now() / 240 + o.x * 2 + o.y) : 1)]];
     }
-    if (tt.kind === "pen") return [[tt.spr + "_back", c[0], c[1], k], [tt.spr + "_front", c[0], c[1], k]];
+    if (tt.kind === "pen") return [[tt.spr + "_back", c[0], c[1], k, o.f], [tt.spr + "_front", c[0], c[1], k, o.f]];
     if (tt.kind === "board") { const u = o._cart ? (performance.now() - o._cart) / 4000 : 1, off = u < 1 ? Math.sin(Math.PI * u) * 7 : 0; return [["board", c[0], c[1] - 0.5, k], ["cart", c[0] + 0.1, c[1] + 0.45 + off, 1]]; }
     return [[tt.spr, c[0], c[1], k, o.f]];
   }
   function penOk(t, x, y) { return Math.abs(x) < t.w / 2 - 0.5 && Math.abs(y) < t.d / 2 - 0.5 && x + y > 0.15; }
   function moveAnimals(o, dt) {
-    const t = T[o.t];
+    const t = ty(o);
     for (const a of o.animals) {
       if (a._x == null) { do { a._x = rnd(-t.w / 2, t.w / 2); a._y = rnd(-t.d / 2, t.d / 2); } while (!penOk(t, a._x, a._y)); a._w = rnd(0, 3); a._dx = -1; a._dy = 1; }
       if (a._tx != null) {
@@ -234,11 +242,11 @@
   }
 
   let P = null; // placement: {t, x, y, o?, f}
-  function validP() {
-    const t = T[P.t];
-    for (let i = 0; i < t.w; i++) for (let j = 0; j < t.d; j++) { const x = P.x + i, y = P.y + j; if (!inMap(x, y) || !owned[pidOf(x, y)]) return false; const id = occ[x + y * N]; if (id && !(P.o && P.o.id === id)) return false; }
+  function fits(t, px, py, selfId) {
+    for (let i = 0; i < t.w; i++) for (let j = 0; j < t.d; j++) { const x = px + i, y = py + j; if (!inMap(x, y) || !owned[pidOf(x, y)]) return false; const id = occ[x + y * N]; if (id && id !== selfId) return false; }
     return true;
   }
+  function validP() { return fits(ty(P), P.x, P.y, P.o && P.o.id); }
 
   let lastT = 0, sec = 0;
   function frame(t) {
@@ -272,7 +280,7 @@
       for (const o of S.objs) if (o.t === "path" && !(P && P.o === o)) { const a = w2p(o.x, o.y); ctx.moveTo(a[0], a[1] - g / 2); ctx.lineTo(a[0] + TW / 2 + g, a[1] + TH / 2); ctx.lineTo(a[0], a[1] + TH + g / 2); ctx.lineTo(a[0] - TW / 2 - g, a[1] + TH / 2); ctx.closePath(); }
       ctx.fillStyle = g ? "#c29a5b" : "#ecd29a"; ctx.fill();
     }
-    if (P) { const tt = T[P.t], ok = validP(); diamond(P.x, P.y, P.x + tt.w, P.y + tt.d); ctx.fillStyle = ok ? "rgba(120,255,120,.55)" : "rgba(255,70,70,.55)"; ctx.fill(); ctx.strokeStyle = ok ? "#1f9d2f" : "#c22"; ctx.lineWidth = 3; ctx.stroke(); }
+    if (P) { const tt = ty(P), ok = validP(); diamond(P.x, P.y, P.x + tt.w, P.y + tt.d); ctx.fillStyle = ok ? "rgba(120,255,120,.55)" : "rgba(255,70,70,.55)"; ctx.fill(); ctx.strokeStyle = ok ? "#1f9d2f" : "#c22"; ctx.lineWidth = 3; ctx.stroke(); }
     // sprites, back to front
     const list = [];
     for (const o of S.objs) { if ((P && P.o === o) || o.t === "path") continue; const c = center(o); if (vis(w2p(c[0], c[1]), 500)) list.push([c[0] + c[1], o]); }
@@ -284,10 +292,10 @@
       const ps = parts(o, t);
       if (T[o.t].kind === "pen") { moveAnimals(o, dt); spr(...ps[0]); drawAnimals(o, t); spr(...ps[1]); } else for (const q of ps) spr(...q);
     }
-    if (P) { const o = Object.assign({}, P.o, { t: P.t, x: P.x, y: P.y, f: P.f, _pop: 0 }); for (const q of parts(o, t)) spr(q[0], q[1], q[2], q[3], q[4], 0.75); }
+    if (P) { const o = Object.assign({}, P.o, { t: P.t, x: P.x, y: P.y, f: P.f, r: P.r, _pop: 0 }); for (const q of parts(o, t)) spr(q[0], q[1], q[2], q[3], q[4], 0.75); }
     // overlays
     for (const e of list) {
-      const o = e[1]; if (!o) continue; const tt = T[o.t], c = center(o), p = w2p(c[0], c[1]);
+      const o = e[1]; if (!o) continue; const tt = ty(o), c = center(o), p = w2p(c[0], c[1]);
       if (tt.kind === "field") { if (ripe(o)) twinkle(p[0], p[1] - 30, t, o.id); continue; }
       if (tt.kind !== "deco" && cam.z > 0.42) label(o, tt);
       if (tt.kind === "prod") {
@@ -356,8 +364,14 @@
         if (ready) h += tool("collect", BASKET, ready, "", "Verzamel"); if (hungry) h += tool("feed", icon(pn.feed), have(pn.feed), "", "Voer");
         h += `<div class="fg-info"><span>${o.animals.length}/${pn.cap} · ${eat.length ? "klaar over " + fmt((Math.min(...eat.map((a) => a.end)) - now()) / 1000) : hungry ? "honger!" : ready ? "klaar!" : "leeg"}</span>`;
         if (o.animals.length < pn.cap) h += `<button class="fg-btn sm" data-buy>+ ${pn.an} ${coin(pn.price)}</button>`;
+        if (tt.next) h += `<button class="fg-btn sm" data-up>⬆ ${T[tt.next].n} (${T[tt.next].pen.cap}) ${coin(tt.upCost)}</button>`;
         openPop(o, h + "</div>", () => { const s = pop.querySelector("span"); if (s && eat.length) { if (eat.some((a) => a.s !== 1)) render(); else s.textContent = `${o.animals.length}/${pn.cap} · klaar over ${fmt((Math.min(...eat.map((a) => a.end)) - now()) / 1000)}`; } });
         const b = pop.querySelector("[data-buy]"); if (b) b.onclick = () => { if (pay(pn.price)) { o.animals.push({ s: 0 }); o._pop = performance.now(); touch(); render(); } };
+        const up = pop.querySelector("[data-up]"); if (up) up.onclick = () => {
+          if (!fits(ty({ t: tt.next, r: o.r }), o.x, o.y, o.id)) return warn("Geen ruimte om uit te breiden: maak de tegels rond het hok vrij of verplaats het.");
+          if (!pay(tt.upCost)) return;
+          o.t = tt.next; o._pop = performance.now(); rebuild(); touch(); sfx(520, 0.08); clickObj(o);
+        };
       };
       return render();
     }
@@ -373,7 +387,7 @@
       const c = tl.c; if (have(c) > 0) S.inv[c]--; else if (!pay(D.crops[c].seed)) return;
       o.crop = c; o.at = now(); o._pop = performance.now(); sfx(520, 0.07); touch(); tut("plant");
     } else if (tl.k === "sickle" && tt.kind === "field" && ripe(o)) { if (gain(o.crop, 2, o)) { o.crop = null; o.at = 0; tut("harvest"); } }
-    else if ((tl.k === "feed" || tl.k === "collect") && tt.kind === "pen" && o.t === tl.src.t) {
+    else if ((tl.k === "feed" || tl.k === "collect") && tt.kind === "pen" && tt.pen.animal === T[tl.src.t].pen.animal) {
       const c = center(o), want = tl.k === "feed" ? 0 : 2, pn = tt.pen; let list = o.animals.filter((a) => a.s === want);
       if (!all) list = list.filter((a) => Math.hypot(a._x - (tx - c[0]), a._y - (ty - c[1])) < 1).slice(0, 1);
       for (const a of list) {
@@ -398,10 +412,11 @@
   // ---------- placement / moving
   function startPlace(type, o) {
     closePop(); closePanel(); const tt = T[type];
-    if (o) P = { t: type, x: o.x, y: o.y, o, f: o.f };
-    else { const c = s2t(vw / 2, vh / 2); P = { t: type, x: Math.round(c[0] - tt.w / 2), y: Math.round(c[1] - tt.d / 2), f: false }; }
+    if (o) P = { t: type, x: o.x, y: o.y, o, f: o.f, r: o.r };
+    else { const c = s2t(vw / 2, vh / 2); P = { t: type, x: Math.round(c[0] - tt.w / 2), y: Math.round(c[1] - tt.d / 2), f: false, r: 0 }; }
     placeBar.classList.add("on"); placeBar.querySelector("span").innerHTML = o ? tt.n + " verplaatsen" : tt.n + " " + coin(tt.cost);
     placeBar.querySelector('[data-p="flip"]').style.display = tt.kind === "deco" ? "" : "none";
+    placeBar.querySelector('[data-p="rot"]').style.display = ["deco", "pen", "prod"].includes(tt.kind) ? "" : "none";
     placeBar.querySelector('[data-p="bin"]').style.display = o && (tt.kind === "deco" || tt.kind === "path" || (tt.kind === "field" && !o.crop)) ? "" : "none";
   }
   function endPlace() { P = null; placeBar.classList.remove("on"); }
@@ -410,12 +425,13 @@
     const a = e.target.closest("[data-p]"); if (!a || !P) return; const k = a.dataset.p, tt = T[P.t];
     if (k === "cancel") return endPlace();
     if (k === "flip") { P.f = !P.f; return; }
+    if (k === "rot") { const a = ty(P); P.r = P.r ? 0 : 1; P.f = !P.f; const b = ty(P); P.x += Math.round((a.w - b.w) / 2); P.y += Math.round((a.d - b.d) / 2); return; } // keeps the centre where it was
     if (k === "bin") { S.objs = S.objs.filter((o) => o !== P.o); rebuild(); touch(); return endPlace(); }
     if (!validP()) return warn("Hier kan het niet staan.");
-    if (P.o) { P.o.x = P.x; P.o.y = P.y; P.o.f = P.f; P.o._pop = performance.now(); rebuild(); touch(); sfx(520, 0.08); return endPlace(); }
+    if (P.o) { P.o.x = P.x; P.o.y = P.y; P.o.f = P.f; if (P.r) P.o.r = 1; else delete P.o.r; P.o._pop = performance.now(); rebuild(); touch(); sfx(520, 0.08); return endPlace(); }
     if (count(P.t) >= limit(P.t)) return warn("Maximum bereikt voor " + tt.n + ".");
     if (!pay(tt.cost)) return;
-    const o = { id: S.oid++, t: P.t, x: P.x, y: P.y, f: P.f, _pop: performance.now() };
+    const o = { id: S.oid++, t: P.t, x: P.x, y: P.y, f: P.f, _pop: performance.now() }; if (P.r) o.r = 1;
     if (tt.kind === "prod") { o.q = []; o.out = []; o.slots = 2; } if (tt.kind === "pen") o.animals = [];
     S.objs.push(o); rebuild(); touch(); tut("place"); addXp(tt.kind === "path" ? 0 : tt.kind === "deco" || tt.kind === "field" ? 1 : 10);
     if (!["deco", "field", "path"].includes(tt.kind)) endPlace();
@@ -424,7 +440,7 @@
   // ---------- pointer input: pan, pinch, tap, long-press to move
   const ptrs = new Map(); let drag = null, pinch = null, lpTimer = 0;
   const loc = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  const onGhost = (t) => P && t[0] >= P.x && t[1] >= P.y && t[0] < P.x + T[P.t].w && t[1] < P.y + T[P.t].d;
+  const onGhost = (t) => P && t[0] >= P.x && t[1] >= P.y && t[0] < P.x + ty(P).w && t[1] < P.y + ty(P).d;
   cv.addEventListener("pointerdown", (e) => {
     try { cv.setPointerCapture(e.pointerId); } catch (x) { /* synthetic pointer */ } const l = loc(e); ptrs.set(e.pointerId, l); clearTimeout(lpTimer);
     if (ptrs.size === 2) { const a = [...ptrs.values()]; pinch = { d: Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) }; drag = null; return; }
@@ -437,14 +453,14 @@
     if (!drag) return;
     if (!drag.moved && Math.hypot(l[0] - drag.sx, l[1] - drag.sy) > 7) { drag.moved = true; clearTimeout(lpTimer); }
     if (!drag.moved) return;
-    if (drag.ghost && P) { const t = s2t(l[0], l[1]), tt = T[P.t]; P.x = Math.round(t[0] - tt.w / 2); P.y = Math.round(t[1] - tt.d / 2); }
+    if (drag.ghost && P) { const t = s2t(l[0], l[1]), tt = ty(P); P.x = Math.round(t[0] - tt.w / 2); P.y = Math.round(t[1] - tt.d / 2); }
     else { cam.x = drag.cx - (l[0] - drag.sx) / cam.z; cam.y = drag.cy - (l[1] - drag.sy) / cam.z; clampCam(); }
   });
   const endPtr = (e) => {
     if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); clearTimeout(lpTimer); if (ptrs.size < 2) pinch = null;
     const d = drag; drag = null; if (!d || d.moved || e.type === "pointercancel") return;
     const t = s2t(d.sx, d.sy);
-    if (P) { const tt = T[P.t]; P.x = Math.round(t[0] - tt.w / 2); P.y = Math.round(t[1] - tt.d / 2); return; }
+    if (P) { const tt = ty(P); P.x = Math.round(t[0] - tt.w / 2); P.y = Math.round(t[1] - tt.d / 2); return; }
     const was = pop.classList.contains("on"); closePop();
     const o = pick(d.sx, d.sy); if (o) return clickObj(o);
     if (was) return;
@@ -503,7 +519,7 @@
     tickOrders(); tut("orders");
     openPanel("Bestellingen", () => '<p class="fg-hint">Lever bestellingen voor XP en nieuwe levels. Munten verdien je in de Arcade.</p><div class="fg-orders">' + S.orders.map((o, i) => o.wait
       ? `<div class="fg-order wait">Nieuwe bestelling over ${fmt((o.wait - now()) / 1000)}</div>`
-      : `<div class="fg-order"><b>${o.who}</b><div>${needs(o.need)}</div><span class="fg-xpr">★ ${o.xp} XP</span><button class="fg-btn sm no" data-act="bin" data-i="${i}">✕</button><button class="fg-btn sm" data-act="go" data-i="${i}" ${canMake(o.need) ? "" : "disabled"}>Lever</button></div>`).join("") + "</div>", {
+      : `<div class="fg-order"><b>${escHtml(o.who)}</b><div>${needs(o.need)}</div><span class="fg-xpr">★ ${o.xp} XP</span><button class="fg-btn sm no" data-act="bin" data-i="${i}">✕</button><button class="fg-btn sm" data-act="go" data-i="${i}" ${canMake(o.need) ? "" : "disabled"}>Lever</button></div>`).join("") + "</div>", {
       bin(d) { S.orders[d.i] = { wait: now() + 30000 }; touch(); },
       go(d) { const o = S.orders[d.i]; if (!canMake(o.need)) return; for (const k in o.need) S.inv[k] -= o.need[k]; S.orders[d.i] = { wait: now() + 15000 }; const b = S.objs.find((x) => x.t === "board"); if (b) { b._cart = performance.now(); float(b, "+" + o.xp + " XP"); } sfx(700, 0.2); addXp(o.xp); },
     });
@@ -526,7 +542,7 @@
   function levelPanel(lvl) {
     const un = [];
     for (const c in D.crops) if (D.crops[c].lvl === lvl) un.push(icon(c) + "<b>" + IT[c].n + "</b>");
-    for (const k in T) if (T[k].lvl === lvl) un.push(`<img class="fg-shopimg" src="${BASE}${T[k].spr}${T[k].kind === "pen" ? "_back" : ""}.png" alt=""><b>${T[k].n}</b>`);
+    for (const k in T) if (T[k].lvl === lvl && !T[k].base) un.push(`<img class="fg-shopimg" src="${BASE}${T[k].spr}${T[k].kind === "pen" ? "_back" : ""}.png" alt=""><b>${T[k].n}</b>`);
     for (const b in D.recipes) for (const r of D.recipes[b]) if (r.lvl === lvl && T[b].lvl < lvl) un.push(icon(r.out) + "<b>" + IT[r.out].n + "</b>");
     sfx(520, 0.5, "triangle");
     openPanel("Level " + lvl + "!", () => `<p class="fg-hint">Goed bezig, boer! ${un.length ? "Nieuw ontgrendeld:" : ""}</p><div class="fg-grid small">${un.map((u) => `<div class="fg-card">${u}</div>`).join("")}</div><div class="fg-row end"><button class="fg-btn" data-act="ok">Verder</button></div>`, { ok: closePanel });
@@ -542,13 +558,13 @@
       let h = '<p class="fg-hint">Zo werkt je boerderij: wat je nodig hebt en wat je ervoor krijgt.</p><h3>Akkers</h3>';
       for (const c in D.crops) h += row(icon(c) + " " + IT[c].n, "groeit " + fmt(D.crops[c].t) + lv(D.crops[c].lvl), "2× " + icon(c));
       h += "<h3>Dieren</h3>";
-      for (const k in T) if (T[k].kind === "pen") { const p = T[k].pen; h += row(T[k].n, "voer: " + icon(p.feed) + " · " + fmt(p.t) + lv(T[k].lvl), icon(p.out) + " " + IT[p.out].n); }
+      for (const k in T) if (T[k].kind === "pen" && !T[k].base) { const p = T[k].pen; h += row(T[k].n, "voer: " + icon(p.feed) + " · " + fmt(p.t) + lv(T[k].lvl), icon(p.out) + " " + IT[p.out].n); }
       for (const b in D.recipes) { h += "<h3>" + T[b].n + lv(T[b].lvl) + "</h3>"; for (const r of D.recipes[b]) h += row(icon(r.out) + " " + IT[r.out].n, Object.keys(r.in).map((i) => r.in[i] + "× " + icon(i)).join(" ") + " · " + fmt(r.t) + lv(r.lvl), (r.n > 1 ? r.n + "× " : "") + icon(r.out)); }
       return h + '<h3>Goed om te weten</h3><p class="fg-hint">Tik op iets om het te gebruiken, houd het ingedrukt om het te verplaatsen. Bestellingen geven XP, XP geeft levels, levels geven nieuwe gewassen en gebouwen. Munten verdien je in de Arcade en geef je hier uit aan land, dieren, gebouwen en versnellen.</p><div class="fg-row end"><button class="fg-btn" data-act="tut">Uitleg opnieuw</button></div>';
     }, { tut() { S.tut = 0; touch(); closePanel(); questUI(); } });
   }
   // step-by-step tutorial: each step waits for one event and points an arrow at its target
-  const fld = (f) => S.objs.find((o) => o.t === "field" && f(o)), obj = (t) => S.objs.find((o) => o.t === t);
+  const fld = (f) => S.objs.find((o) => o.t === "field" && f(o)), obj = (t) => S.objs.find((o) => (T[o.t].base || o.t) === t);
   const TUT = [
     { ev: "harvest", txt: "Oogst je tarwe: tik op een gouden akker en sleep de sikkel over je akkers.", tgt: () => fld(ripe) },
     { ev: "plant", txt: "Zaai opnieuw: tik op een lege akker en sleep de tarwe over je akkers.", tgt: () => fld((o) => !o.crop) },

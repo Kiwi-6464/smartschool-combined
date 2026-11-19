@@ -19,6 +19,18 @@
     ".farm-holder { flex: 1; display: flex; min-height: max(540px, calc(100vh - 190px)); }" +
     ".farm-holder > .fg { flex: 1; height: auto; min-height: inherit; border-radius: 18px; }";
 
+  /** The student's teachers, from the grades cache the Cijfers pages already keep (no extra request). [] when there is none yet. */
+  function teacherNames() {
+    if (typeof window.sscGetGradesCache !== "function") return Promise.resolve([]);
+    return window.sscGetGradesCache().then(function (entry) {
+      var seen = {};
+      ((entry && entry.grades) || []).forEach(function (g) {
+        if (g && typeof g.leerkracht === "string" && g.leerkracht.trim()) seen[g.leerkracht.trim()] = true;
+      });
+      return Object.keys(seen).slice(0, 30);
+    }, function () { return []; });
+  }
+
   function mount(holder, shadow) {
     var eco = window.sscHubEconomy;
     var game = null;
@@ -45,10 +57,12 @@
 
     Promise.resolve(eco.ready()).then(function () {
       var key = "sscFarm3_" + eco.uid();
-      return eco.load(key).then(function (state) {
+      return Promise.all([eco.load(key), teacherNames()]).then(function (out) {
+        var state = out[0];
         if (dead) return;
         game = window.FarmGame.mount(root, {
           base: chrome.runtime.getURL("farm/assets/"),
+          teachers: out[1],
           state: state || null,
           wallet: { get: eco.coins, spend: eco.take },
           onSave: function (s) {

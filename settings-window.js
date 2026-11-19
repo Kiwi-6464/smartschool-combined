@@ -816,16 +816,15 @@
 
   /* ---------- page: Uiterlijk ---------- */
 
-  var THEME_CATEGORY_ORDER = ["dark", "light", "mountain", "japan", "car", "space", "seasonal", "animal", "other"];
+  var THEME_CATEGORY_ORDER = ["car", "japan", "space", "games", "nature", "dark", "light", "other"];
   var THEME_CATEGORY_NAMES = {
+    car: "Auto's",
+    japan: "Japan",
+    space: "Ruimte",
+    games: "Games",
+    nature: "Natuur",
     dark: "Donker",
     light: "Licht",
-    mountain: "Bergen",
-    japan: "Japan",
-    car: "Auto's",
-    space: "Ruimte",
-    seasonal: "Seizoenen",
-    animal: "Dieren",
     other: "Overig",
     custom: "Eigen",
   };
@@ -868,7 +867,13 @@
   function themeIdsFor(category) {
     var ids = themesIn(category);
     if (category === "other") ids = ids.concat(leftoverThemes());
-    return ids;
+    var themes = window.SSC_THEMES || {};
+    function label(id) {
+      return (themes[id] && themes[id].name) || id;
+    }
+    return ids.sort(function (x, y) {
+      return label(x).localeCompare(label(y), "nl", { sensitivity: "base" });
+    });
   }
 
   function themePreviewStyle(node, id) {
@@ -1733,6 +1738,8 @@
     ["slot", "Slotmachine"],
     ["roulette", "Roulettewiel"],
     ["pack", "Kaartenpakket"],
+    ["guess", "Gok het cijfer (eerst raden, dan walkout)"],
+    ["random", "Willekeurig (elke keer een andere)"],
   ];
 
   var TIER_NAMES = { bronze: "Brons", silver: "Zilver", gold: "Goud", icon: "Icoon" };

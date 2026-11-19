@@ -94,12 +94,14 @@ One screen with six islands, opened from the "Islands" button in the top bar. Ea
 4. Click **Load unpacked** and pick the unzipped folder (the one with `manifest.json`).
 5. Open Smartschool and reload the page.
 
-Note: this source does not include the wallpaper images, the sound effects or any Firebase keys. Themes show no photo, and the league only works with your own Firebase project (see below). The Edge Add-ons version has everything.
+Note: this source includes the theme wallpapers (see `NOTICE.md` for their sources and the open licence questions), but not the sound effects or any Firebase keys. The league only works with your own Firebase project (see below). The Edge Add-ons version has everything.
 
 ### Privacy
 
 - Your grades and settings stay in your browser (`chrome.storage`).
-- Only the class league and the shared calculator programs use a server (Firebase Realtime Database, anonymous sign-in).
+- The class league, the shared calculator programs, your coins and your farm also use a server (Firebase Realtime Database, anonymous sign-in).
+- The weather widget sends the city you typed to Open-Meteo, and only then.
+- Full details: [PRIVACY.md](PRIVACY.md) (also as [privacy-policy.html](privacy-policy.html)).
 - If you join the league, your name, team and cards are stored there. A card shows a subject and a rating based on your grade, and classmates in the league can see it. Do not join if you do not want that.
 - No tracking, no ads.
 
@@ -127,7 +129,9 @@ Tests: `node tests/chess-perft.js` and `node tests/chess-bot.js`.
 - 3D island art: models from [Poly Pizza](https://poly.pizza) under CC BY 3.0, see [assets/islands/CREDITS.md](assets/islands/CREDITS.md).
 - Farm art: [Kenney](https://kenney.nl) (CC0), see [farm/CREDITS.txt](farm/CREDITS.txt).
 
-Smartschool is a trademark of its owner. This project is not affiliated with or endorsed by Smartschool.
+## Disclaimer
+
+Smartschool Combined is an unofficial, independent project. It is not affiliated with, authorised, sponsored or endorsed by Smartschool or its owner. "Smartschool" is a trademark of its owner and is used here only to say which website the extension works with. The extension changes how pages look in your own browser; it does not bypass any login or access control and does not give access to anything you could not already see. It is provided "as is", without warranty (see `LICENSE`). Grades shown are copied from your own Smartschool page, so always check important results on Smartschool itself. The games use virtual coins only; nothing has real-world value. Credits and third-party licences: see `NOTICE.md`.
 
 ## Support
 
@@ -138,3 +142,5 @@ Smartschool Combined is and stays free, with no paywall. If you want to support 
 ## License
 
 The original code is MIT licensed, see [LICENSE](LICENSE). Parts based on other projects keep their own terms, see [NOTICE.md](NOTICE.md). Because of the CijferReveal parts, this project as a whole may **not** be used commercially.
+
+Developer notes for a Rust/Wasm port: [HANDOVER-RUST.md](HANDOVER-RUST.md) (read the `firebase-config.js` warning first).

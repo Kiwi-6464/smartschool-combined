@@ -205,7 +205,12 @@
   var OLD_KEY = "sscArcade";
   var arcadeKey = ARCADE_KEY;
   var START_COINS = 1000;
-  var arcade = { coins: START_COINS, best: {}, peak: START_COINS, barn: 0, toys: 0, fert: 0, updatedAt: 0 };
+  /*
+   * adminSetAt: set only by the admin panel when it edits a balance. A server value with a newer
+   * adminSetAt always wins over this device, even when this device has a newer updatedAt; the
+   * device echoes the value back and never raises it (the database rules enforce that).
+   */
+  var arcade = { coins: START_COINS, best: {}, peak: START_COINS, barn: 0, toys: 0, fert: 0, updatedAt: 0, adminSetAt: 0 };
   var arcadeLoaded = null;
   var coinListeners = [];
   var economyUid = "";
@@ -224,6 +229,12 @@
     arcade.toys = num(v.toys, 0) & 7;
     arcade.fert = num(v.fert, 0);
     arcade.updatedAt = num(v.updatedAt, 0);
+    arcade.adminSetAt = num(v.adminSetAt, arcade.adminSetAt);
+  }
+
+  /** True when the server copy was changed by an admin after this device last saw it. */
+  function adminNewer(server) {
+    return !!server && num(server.adminSetAt, 0) > arcade.adminSetAt;
   }
 
   function askBackground(msg) {
@@ -256,7 +267,7 @@
         if (economyUid === "local") return null;
         return askBackground({ type: "ssc:stateGet", kind: "economy", userId: economyUid }).then(function (reply) {
           var server = reply && reply.ok && reply.state;
-          if (server && num(server.updatedAt, 0) > arcade.updatedAt) {
+          if (server && (num(server.updatedAt, 0) > arcade.updatedAt || adminNewer(server))) {
             takeEconomy(Object.assign({ best: arcade.best }, server));
             storageSet(arcadeKey, snapshot());
           } else if (reply && reply.ok && arcade.updatedAt) {
@@ -269,16 +280,36 @@
   }
 
   function snapshot() {
-    return { coins: arcade.coins, best: arcade.best, peak: arcade.peak, barn: arcade.barn, toys: arcade.toys, fert: arcade.fert, updatedAt: arcade.updatedAt };
+    return { coins: arcade.coins, best: arcade.best, peak: arcade.peak, barn: arcade.barn, toys: arcade.toys, fert: arcade.fert, updatedAt: arcade.updatedAt, adminSetAt: arcade.adminSetAt };
   }
 
+  var lastAdminCheck = 0;
   function pushEconomy() {
-    if (economyUid && economyUid !== "local") {
+    if (!economyUid || economyUid === "local") return;
+    var send = function () {
       askBackground({
         type: "ssc:stateSave", kind: "economy", userId: economyUid,
-        state: { coins: arcade.coins, peak: arcade.peak, barn: arcade.barn, toys: arcade.toys, fert: arcade.fert, updatedAt: arcade.updatedAt },
+        state: { coins: arcade.coins, peak: arcade.peak, barn: arcade.barn, toys: arcade.toys, fert: arcade.fert, updatedAt: arcade.updatedAt, adminSetAt: arcade.adminSetAt },
+      }).then(function (reply) {
+        // The rules refuse a write that would overwrite an admin edit: read it and take it.
+        if (reply && reply.ok === false && reply.error === "http") adoptAdmin();
       });
-    }
+    };
+    var adoptAdmin = function () {
+      return askBackground({ type: "ssc:stateGet", kind: "economy", userId: economyUid }).then(function (reply) {
+        var server = reply && reply.ok && reply.state;
+        if (!adminNewer(server)) return false;
+        takeEconomy(Object.assign({ best: arcade.best }, server));
+        storageSet(arcadeKey, snapshot());
+        coinListeners.forEach(function (fn) { fn(arcade.coins); });
+        return true;
+      });
+    };
+    // Compare before overwrite: if an admin edited the balance after this device last read it, take
+    // that value instead of pushing ours over it. Checked at most every 20 s to spare the database.
+    if (Date.now() - lastAdminCheck < 20000) { send(); return; }
+    lastAdminCheck = Date.now();
+    adoptAdmin().then(function (adopted) { if (!adopted) send(); });
   }
 
   var saveTimer = 0;
@@ -1157,6 +1188,8 @@
     { id: "plinko", name: "Plinko", tag: "Zwaartekracht, pinnen en een multiplier.", kind: "hub", c: "var(--hb-acc)" },
     { id: "roulette", name: "Roulette", tag: "Rood of zwart? Zet je fiches.", kind: "hub", c: "var(--hb-red)" },
     { id: "blackjack", name: "Blackjack", tag: "Versla de bank, kom zo dicht mogelijk bij 21.", kind: "hub", c: "var(--hb-gold)" },
+    { id: "poker", name: "Poker", tag: "Texas Hold'em tegen drie AI-spelers.", kind: "hub", module: "arcade2", c: "var(--hb-red)" },
+    { id: "geometry", name: "Cube Dash", tag: "Spring, vlieg en ontwijk op het ritme.", kind: "hub", module: "arcade2", c: "var(--hb-blue)" },
   ];
 
   function gameArt(id) {
@@ -1207,6 +1240,24 @@
       };
       return '<svg viewBox="0 0 120 80" aria-hidden="true">' + face(24, -12, "K", "♥", "red", "ga-card--b") + face(54, 9, "A", "♠", "black", "") +
         '<circle cx="22" cy="68" r="6" style="fill:var(--hb-gold)"/><circle cx="22" cy="68" r="3.6" fill="none" style="stroke:var(--hb-black);stroke-opacity:.4" stroke-width="1"/></svg>';
+    }
+    if (id === "poker") {
+      var pc = function (x, rot, rank, suit, red) {
+        var col = red ? "#d6204a" : "#1b1f2a";
+        return '<g class="ga-card" style="--r:' + rot + 'deg"><rect x="' + x + '" y="10" width="34" height="48" rx="5" fill="#fbfaf5" stroke="#0b1020" stroke-opacity=".35"/>' +
+          '<text x="' + (x + 5) + '" y="24" font-size="11" font-weight="900" fill="' + col + '" font-family="system-ui, sans-serif">' + rank + "</text>" +
+          '<text x="' + (x + 17) + '" y="46" text-anchor="middle" font-size="20" fill="' + col + '" font-family="system-ui, sans-serif">' + suit + "</text></g>";
+      };
+      return '<svg viewBox="0 0 120 80" aria-hidden="true">' + pc(14, -14, "A", "♠", false) + pc(40, -4, "K", "♠", false) + pc(66, 7, "Q", "♠", false) +
+        '<circle cx="98" cy="62" r="9" style="fill:var(--hb-red)"/><circle cx="98" cy="62" r="5.5" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1.4" stroke-dasharray="3 3"/>' +
+        '<circle cx="86" cy="68" r="7" style="fill:var(--hb-gold)"/><circle cx="86" cy="68" r="4" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="1"/></svg>';
+    }
+    if (id === "geometry") {
+      return '<svg viewBox="0 0 120 80" aria-hidden="true"><rect x="0" y="62" width="120" height="18" fill="#101a45"/><path d="M0 62H120" stroke="#7be8ff" stroke-width="1.5"/>' +
+        '<path d="M70 62l8-18 8 18z" fill="#3a0f1c" stroke="#ff5d7a" stroke-width="2"/><path d="M92 62l8-18 8 18z" fill="#3a0f1c" stroke="#ff5d7a" stroke-width="2"/>' +
+        '<rect x="104" y="46" width="14" height="16" fill="#0f3a55" stroke="#2fd6ff" stroke-width="2"/>' +
+        '<g class="ga-card" style="--r:-22deg"><rect x="22" y="30" width="26" height="26" fill="#ffd84a" stroke="#7a5a00" stroke-width="2"/><rect x="29" y="38" width="5" height="5" fill="#1a1a1a"/><rect x="38" y="38" width="5" height="5" fill="#1a1a1a"/><rect x="29" y="48" width="14" height="3" fill="#1a1a1a"/></g>' +
+        '<path d="M6 54h14M2 46h12" stroke="#7be8ff" stroke-width="2" opacity=".5"/></svg>';
     }
     // roulette
     var seg = "";
@@ -1271,7 +1322,7 @@
     stageEl.appendChild(wrap);
 
     if (g.kind === "hub") {
-      loadArcade().then(function () {
+      Promise.all([loadArcade(), g.module ? loadModule(g.module) : true]).then(function () {
         if (view !== "game") return;
         head.appendChild(coinPill());
         var layout = h("div", "hg-layout hg-layout--" + g.id);

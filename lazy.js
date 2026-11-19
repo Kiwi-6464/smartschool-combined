@@ -40,6 +40,20 @@
       files: ["welcome.js"],
       ready: function () { return !!window.sscWelcome; },
     },
+    // Owner only: the admin board, and the popup for messages the owner sends.
+    admin: {
+      files: ["admin.js"],
+      ready: function () { return typeof window.sscAdminOpen === "function"; },
+    },
+    announce: {
+      files: ["announce.js"],
+      ready: function () { return typeof window.sscAnnounceShow === "function"; },
+    },
+    // Cube Dash (Geometry Dash style) and Poker, opened from the Arcade.
+    arcade2: {
+      files: ["hub-geometry.js", "hub-poker.js"],
+      ready: function () { return !!(window.sscHubGames && window.sscHubGames.geometry && window.sscHubGames.poker); },
+    },
     chess: {
       files: ["chess-engine.js", "chess-bot.js", "hub-chess.js"],
       ready: function () { return !!window.sscHubChess; },

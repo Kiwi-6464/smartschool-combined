@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Smartschool Combined",
-  "version": "4.10.0",
+  "version": "4.11.0",
   "description": "Cijfers, thema's, widgets en reveal in een paneel op de Smartschool-pagina.",
   "icons": {
     "16": "assets/icons/icon-16.png",
@@ -15,7 +15,8 @@
   ],
   "host_permissions": [
     "https://*.smartschool.be/*",
-    "https://your-project-default-rtdb.europe-west1.firebasedatabase.app/*",
+    "https://kiwi-6464.github.io/*",
+    "https://smartschool-combined-default-rtdb.europe-west1.firebasedatabase.app/*",
     "https://identitytoolkit.googleapis.com/*",
     "https://securetoken.googleapis.com/*"
   ],
@@ -32,7 +33,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.smartschool.be/*"
+        "https://*.smartschool.be/*",
+        "https://kiwi-6464.github.io/*"
       ],
       "js": [
         "preload.js"
@@ -41,12 +43,14 @@
     },
     {
       "matches": [
-        "https://*.smartschool.be/*"
+        "https://*.smartschool.be/*",
+        "https://kiwi-6464.github.io/*"
       ],
       "exclude_matches": [
         "https://*.smartschool.be/login*",
         "https://*.smartschool.be/account-verification*",
-        "https://*.smartschool.be/2fa*"
+        "https://*.smartschool.be/2fa*",
+        "https://kiwi-6464.github.io/login*"
       ],
       "css": [
         "themes.css"
@@ -82,7 +86,8 @@
         "farm/assets/*.svg"
       ],
       "matches": [
-        "https://*.smartschool.be/*"
+        "https://*.smartschool.be/*",
+        "https://kiwi-6464.github.io/*"
       ]
     }
   ]

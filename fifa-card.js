@@ -430,7 +430,6 @@
     var shine = el("div", "ssc-fc-shine");
     if (opts.animateShine !== false) shine.setAttribute("data-on", "1");
     card.appendChild(shine);
-    card.appendChild(silhouette("ssc-fc-sil"));
     card.appendChild(el("div", "ssc-fc-holo"));
     trackHolo(card);
 

@@ -1,0 +1,56 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Privacy policy: Smartschool Combined</title><style>body{font:16px/1.55 system-ui,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem;color:#222}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 8px;text-align:left;vertical-align:top;font-size:14px}code{background:#f1f1f1;padding:0 3px;border-radius:3px}</style></head><body><h1>Privacy policy: Smartschool Combined</h1>
+<p>Last updated: 2026-11-19. DRAFT written from the extension's source code. This is not legal advice; have it checked before you rely on it.</p>
+<p>Smartschool Combined ("the extension") is an unofficial browser extension for Smartschool pages. It is not affiliated with or endorsed by Smartschool. Publisher: Iwert De Dijn. Contact: [CONTACT_EMAIL]</p>
+<h2>Short version</h2>
+<ul>
+<li>Your grades, settings, theme, coins and farm are kept in your browser (<code>chrome.storage.local</code>).</li>
+<li>A small part is also stored online in a Firebase Realtime Database so the class league, the coins and the farm keep working across devices. This is described below.</li>
+<li>No ads, no tracking, no analytics, nothing is sold or shared for marketing.</li>
+</ul>
+<h2>What stays in your browser</h2>
+<p>Stored with <code>chrome.storage.local</code> on your device only (see <code>settings.js</code>, <code>hub.js</code>, <code>team.js</code>, <code>content.js</code>):</p>
+<table><thead><tr><th>Data</th><th>Key(s)</th><th>Why</th></tr></thead><tbody>
+<tr><td>Settings, theme, layout, widget choices</td><td><code>sscSettings</code>, <code>sscWidgetData</code></td><td>Remember how you set it up</td></tr>
+<tr><td>A copy of your grades</td><td><code>sscGradesCache</code></td><td>Show grades and averages quickly</td></tr>
+<tr><td>Which grades you already saw</td><td><code>sscSeen</code>, <code>sscSeenInitialized</code></td><td>Play the reveal only for new grades</td></tr>
+<tr><td>Arcade coins and best scores</td><td><code>sscArcade</code>, <code>sscUserEconomy</code></td><td>The coin balance and high scores</td></tr>
+<tr><td>Your team, opponents and league cache</td><td><code>sscTeam_*</code>, <code>sscTeamSquad</code>, <code>sscOpponent_*</code>, <code>sscBattlePoints_*</code>, <code>sscLeague_*</code></td><td>The Ultimate Team game</td></tr>
+<tr><td>Class averages</td><td><code>sscClassAvg</code></td><td>Card ratings</td></tr>
+<tr><td>Calculator access and welcome flags</td><td><code>sscCalculatorAccess</code>, <code>sscWelcomeSeen</code></td><td>Remember a choice</td></tr>
+<tr><td>Farm game state</td><td>farm game keys</td><td>Your farm</td></tr>
+<tr><td>Cube Dash progress and the optional poker server address</td><td><code>sscGeometry</code>, <code>sscPokerServer</code></td><td>Remember your progress and a server address you typed yourself</td></tr>
+<tr><td>Which owner messages you already saw</td><td><code>sscAnnounce_{userId}</code> (a start time, the last check and the last message seen)</td><td>Show each message once</td></tr>
+</tbody></table>
+<p>The extension reads your grades and agenda from the Smartschool page you are already logged in on, using that page's own requests to <code>/results/api/</code> and <code>/planner/api/</code>. It never sees or stores your Smartschool password.</p>
+<h2>What is sent to the internet</h2>
+<ol>
+<li><strong>Firebase Realtime Database</strong> (Google), project <code>smartschool-combined-default-rtdb</code>, host <code>smartschool-combined-default-rtdb.europe-west1.firebasedatabase.app</code>. Requests are made by <code>background.js</code> after an anonymous Firebase sign-in (<code>identitytoolkit.googleapis.com</code>, <code>securetoken.googleapis.com</code>). The anonymous account has no email or name. What is stored:</li>
+<li style="margin-left:1.2em"><strong>League</strong> (<code>leagues/{class}/members/{userId}</code>): your Smartschool user id, display name (max 40 characters), class name, your encoded team (card subject and rating derived from your grades, max 8000 characters), a timestamp and the anonymous Firebase id. Classmates in the same league can see this. Join only if you want that.</li>
+<li style="margin-left:1.2em"><strong>League matches</strong> (<code>leagues/{class}/matches/{week}</code>): weekly match results between teams.</li>
+<li style="margin-left:1.2em"><strong>Calculator programs</strong> (<code>leagues/{class}/calculatorPrograms</code>): files shared by the person who hosts them.</li>
+<li style="margin-left:1.2em"><strong>Coins</strong> (<code>economies/{userId}</code>): coin balance, peak and a few counters.</li>
+<li style="margin-left:1.2em"><strong>Farm</strong> (<code>farms/{userId}</code>): your farm data (one text string, max 60 000 characters) and level.</li>
+<li style="margin-left:1.2em"><strong>Pets and plants</strong> (<code>pets</code>, <code>pets2</code>, <code>plants</code>): small records for the pet and plant features.</li>
+<li style="margin-left:1.2em"><strong>Messages from the owner</strong> (<code>announcements/{id}</code>): a title, a text, a time and either &ldquo;everyone&rdquo; or a list of Smartschool user ids. The extension asks for these every few minutes while a Smartschool page is open, with your user id, and shows a popup for messages meant for you. Only the owner of the extension (an admin account in the database) can create or withdraw messages. When a message reaches your extension it writes the time it arrived under <code>announcements/{id}/seen/{userId}</code>, so the owner can see who received it (any signed-in user could technically write such a receipt, so it is a convenience, not proof).</li>
+<li><strong>Open-Meteo</strong> (<code>geocoding-api.open-meteo.com</code>, <code>api.open-meteo.com</code>): only when you use the weather widget. The city you typed is sent to look up its coordinates and the weather. Nothing else is sent.</li>
+<li><strong>Links and wallpapers you choose yourself.</strong> If you paste a wallpaper link, your browser loads it from that address.</li>
+</ol>
+<p>The database is readable by anyone who knows the paths (the league is open by design). Do not use a real name you do not want classmates to see.</p>
+<p>The owner of the extension has an admin board that can read the coins, farm level and league results of the students in a class and can correct coins and match scores. It is used only to keep the games working and fair.</p>
+<h2>Legal basis, retention and your rights</h2>
+<ul>
+<li>The extension runs because you installed it and use its features. League data is stored because you chose to join.</li>
+<li>Data is kept until you remove it. It is not deleted automatically. [TO VERIFY: confirm whether any clean-up job exists on the Firebase project.]</li>
+<li>To delete local data: remove the extension, or clear its storage in your browser.</li>
+<li>To delete your online data (league member, coins, farm): email [CONTACT_EMAIL] with your display name and class. [TO VERIFY: add an in-extension delete button if you want to offer instant deletion.]</li>
+<li>You can ask what is stored about you and ask for correction or deletion (GDPR, EU/Belgium). Contact: [CONTACT_EMAIL]. You can also complain to the Belgian Data Protection Authority.</li>
+<li>Children: the extension is used by students. Ask your school or parents if you are unsure whether to join the league.</li>
+</ul>
+<h2>Security</h2>
+<p>Transfers use HTTPS. Database rules (<code>database.rules.json</code>) require an anonymous sign-in and let only the same anonymous account change a league member. [TO VERIFY: the <code>economies</code>, <code>farms</code>, <code>pets</code> and <code>plants</code> nodes accept writes from any signed-in user; see PLAN-4.11.md item 7.]</p>
+<h2>Third parties</h2>
+<p>Google Firebase (storage and anonymous sign-in) and Open-Meteo (weather). No analytics, advertising or tracking services are used.</p>
+<h2>Changes</h2>
+<p>Changes to this policy are listed in <code>CHANGELOG.md</code>.</p><h2>Arcade games</h2>
+<p>Poker and Cube Dash run entirely in your browser with play coins; nothing about them is sent anywhere. Poker has an optional "Online" field for a WebSocket address of a server you or the owner run: the extension connects only after you type it in and press the button, and then sends your chosen blinds and your actions to that server. Leave it empty and nothing is contacted.</p>
+</body></html>

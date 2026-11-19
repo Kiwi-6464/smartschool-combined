@@ -24,14 +24,14 @@
   /* ---------- access ---------- */
 
   /**
-   * League only for TWE classes for now ("6A-TWE", "6a twe"): "TWE" as its
+   * League only for TWE classes for now ("5D-TWE", "5D twe"): "TWE" as its
    * own token, so "tweede" never matches.
    */
   function classAllowed(className) {
     return /(^|[^a-z])twe([^a-z]|$)/i.test(String(className || ""));
   }
 
-  var ACCESS_MESSAGE = "De league is momenteel alleen beschikbaar voor TWE-klassen.";
+  var ACCESS_MESSAGE = "De league is momenteel alleen beschikbaar voor klas 5D-TWE.";
 
   /* ---------- weekends ---------- */
 
